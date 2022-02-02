@@ -24,6 +24,8 @@ def pdf_not_vectorized(x: float, x0: float, xi: float) -> float:
 	a1 = (0.04166666667, -0.01996527778, 0.02709538966)
 	a2 = (-1.845568670, -4.284640743)
 	
+	x0 = x0 + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
+	
 	if xi <= 0:
 		return 0
 	v = (x - x0) / xi
@@ -130,6 +132,7 @@ def pdf(x, x0, xi):
 		return denlan
 	
 	x, x0, xi = np.meshgrid(x,x0,xi)
+	x0 = x0 + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
 	v = (x - x0) / xi
 	
 	denlan = x*float('NaN') # Initialize.
