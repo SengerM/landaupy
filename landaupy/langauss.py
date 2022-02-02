@@ -37,3 +37,19 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, sigma: float) -> float:
 		suma += fland * gaussian_pdf(x, xx, sigma)
 
 	return step*suma
+
+def pdf_convolution_vectorized(x: float, mu: float, eta: float, sigma: float):
+	if any([not isinstance(arg, (int,float)) for arg in [x,mu,eta,sigma]]):
+		raise TypeError('All arguments must be float numbers.')
+	convolution_steps = 100 if sigma<3*eta else int(100*sigma/eta/3) # In the original code this is called `np` but this name is usually reserved for numpy in Python.
+	if convolution_steps > 99999: 
+		convolution_steps = 99999
+	convolution_steps = int(convolution_steps)
+	mpc = mu+0.22278298*eta
+	sc = 8
+	xlow = x - sc*sigma
+	xupp = x + sc*sigma
+	step = (xupp-xlow)/convolution_steps
+	xx = np.arange(xlow,xupp,step)
+	result = step*sum(landau_pdf(xx, mpc, eta)/eta*gaussian_pdf(x, xx, sigma))
+	return result
