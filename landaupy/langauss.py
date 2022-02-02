@@ -31,12 +31,8 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, sigma: float) -> float:
 
 	# Discrete linear convolution of Landau and Gaussian
 	suma = 0
-	for i in range(1, int(np/2+1)):
+	for i in range(1, int(np+1)):
 		xx = xlow + (i - 0.5) * step
-		fland = landau_pdf(xx, mpc, eta) / eta
-		suma += fland * gaussian_pdf(x, xx, sigma)
-
-		xx = xupp - (i - 0.5) * step
 		fland = landau_pdf(xx, mpc, eta) / eta
 		suma += fland * gaussian_pdf(x, xx, sigma)
 
