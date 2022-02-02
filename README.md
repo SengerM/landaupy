@@ -1,6 +1,6 @@
 # landaupy
 
-A simple and **pure Python implementation**¹ of [the Landau distribution](https://en.wikipedia.org/wiki/Landau_distribution), since no common package (Scipy, Numpy, ...) provides this. The algorithm to calculate the Landau distribution was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html) which is [documented here](https://root.cern.ch/doc/master/group__PdfFunc.html#ga53d01e04de833eda26560c40eb207cab).
+A simple and **pure Python implementation**¹ of [the Landau distribution](https://en.wikipedia.org/wiki/Landau_distribution), since no common package (Scipy, Numpy, etc.) provides this. The algorithm to calculate the Landau distribution was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html) which is [documented here](https://root.cern.ch/doc/master/group__PdfFunc.html#ga53d01e04de833eda26560c40eb207cab).
 
 ## Installation
 
@@ -10,6 +10,8 @@ pip install -e /wherever/you/like/landaupy
 ```
 
 ## Usage
+
+### Landau distribution
 
 A simple example of the **Landau distribution**:
 
@@ -57,8 +59,10 @@ fig.update_layout(
 fig.show()
 ```
 
-It was also implemented the **langauss** distribution which is the convolution of a Gaussian and a Landau, useful when working with real life particle detectors. The usage is similar:
-```
+### Langauss distribution
+
+I also implemented the so called **langauss** distribution which is the convolution of a Gaussian and a Landau, useful when working with real life particle detectors. The usage is similar:
+```python
 import landaupy.langauss as langauss
 import landaupy.landau as landau
 import plotly.graph_objects as go
@@ -92,9 +96,13 @@ fig.update_layout(
 fig.show()
 ```
 
-## Normalization
+## Differences WRT the Root version
 
-Despite this implementation is based in the original from Root, I made a few changes to be more consistent with the rest of the world. One of the things I changed is the normalization of the `langauss.pdf` distribution such that it integrates to 1. **All the PDFs in this package integrate to 1**. You can verify the normalization with the following code:
+Despite this implementation is based in the original from Root, I made a few changes to be more consistent with the rest of the world.
+
+### Normalization
+
+One of the things I changed is the normalization of the `langauss.pdf` distribution such that it integrates to 1. **All the PDFs in this package integrate to 1**. You can verify the normalization with the following code:
 ```python
 import landaupy.landau as landau
 import landaupy.langauss as langauss
@@ -112,6 +120,10 @@ with warnings.catch_warnings():
 			for sigma in [.1,1,5,10]:
 				print(f'x_mpv={x_mpv}, xi={xi}, sigma={sigma} → integral(langauss.pdf) = {integrate.quad(lambda x: langauss.pdf(x, landau_x_mpv=x_mpv, landau_xi=xi, gauss_sigma=sigma), -float("inf"), float("inf"))[0]}')
 ```
+
+### The MPV argument
+
+One of the arguments of the `landau.pdf` function is `x_mpv`. This is really the *x* position of the Most Probable Value (MPV), which is usually what one is interested in. In the original implementation from Root the parameter is called `x0` and it is close to the MPV but it is not the MPV. The relation between them is given by `x0 = x_mpv + 0.22278298*xi` and I stole it from [the Root implementation of the `langauss` function](https://root.cern.ch/doc/master/langaus_8C.html).
 
 ## Footnotes
 
