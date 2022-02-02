@@ -4,9 +4,9 @@
 
 import numpy as np
 
-def pdf_not_vectorized(x: float, x0: float, xi: float) -> float:
+def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
 	"""Non vectorized landau PDF calculation. This function should be avoided, this is almost a copy-paste from the original Root code in https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html only for testing purposes."""
-	if any([not isinstance(arg, (int,float)) for arg in [x,x0,xi]]):
+	if any([not isinstance(arg, (int,float)) for arg in [x,x_mpv,xi]]):
 		raise TypeError('All arguments must be float numbers.')
 	
 	p1 = (0.4259894875, -0.1249762550, 0.03984243700, -0.006298287635, 0.001511162253)
@@ -24,11 +24,11 @@ def pdf_not_vectorized(x: float, x0: float, xi: float) -> float:
 	a1 = (0.04166666667, -0.01996527778, 0.02709538966)
 	a2 = (-1.845568670, -4.284640743)
 	
-	x0 = x0 + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
+	x_mpv = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
 	
 	if xi <= 0:
 		return 0
-	v = (x - x0) / xi
+	v = (x - x_mpv) / xi
 	if v < -5.5:
 		u = np.exp(v + 1.0)
 		if u < 1e-10:
@@ -57,10 +57,10 @@ def pdf_not_vectorized(x: float, x0: float, xi: float) -> float:
 		denlan = u * u * (1 + (a2[0] + a2[1] * u) * u)
 	return denlan / xi
 
-def pdf(x, x0, xi):
+def pdf(x, x_mpv, xi):
 	"""Vectorized version of the landau PDF function, adapted from https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html
 	x: float, numpy array. Value where to calculate the PDF.
-	x0: float, numpy array. Location of the peak, i.e. the most probable value (MPV).
+	x_mpv: float, numpy array. Location of the peak, i.e. the most probable value (MPV).
 	xi: float, numpy array. Width of the distribution."""
 	def denlan_1(v):
 		"""Calculates denlan when v < -5.5. If v is outside this range, NaN value is returned."""
@@ -131,9 +131,9 @@ def pdf(x, x0, xi):
 		denlan[v<=300] = float('NaN')
 		return denlan
 	
-	x, x0, xi = np.meshgrid(x,x0,xi)
-	x0 = x0 + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
-	v = (x - x0) / xi
+	x, x_mpv, xi = np.meshgrid(x,x_mpv,xi)
+	x_mpv = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
+	v = (x - x_mpv) / xi
 	
 	denlan = x*float('NaN') # Initialize.
 	denlan[xi<=0] = 0

@@ -18,18 +18,18 @@ import landaupy.landau as landau
 import plotly.graph_objects as go
 import numpy as np
 
-print(landau.pdf(x=1,x0=2,xi=3)) # Calculate in a single point.
+print(landau.pdf(x=1,x_mpv=2,xi=3)) # Calculate in a single point.
 
 # Calculate along a Numpy array with fixed parameters:
 x_axis = np.linspace(-11,111,9999) # Since it is a "full numpy implementation" it is really fast, even for very large arrays like this one.
 fig = go.Figure()
 for xi in [1,2]:
-	for x0 in [0,55]:
+	for x_mpv in [0,55]:
 		fig.add_trace(
 			go.Scatter(
 				x = x_axis,
-				y = landau.pdf(x_axis, x0=x0, xi=xi),
-				name = f'ξ={xi}, x<sub>0</sub>={x0}',
+				y = landau.pdf(x_axis, x_mpv=x_mpv, xi=xi),
+				name = f'ξ={xi}, x<sub>MPV</sub>={x_mpv}',
 			)
 		)
 fig.update_layout(
@@ -44,7 +44,7 @@ xi_values = np.linspace(1,4)
 fig = go.Figure()
 fig.add_trace(
 	go.Heatmap(
-		z = landau.pdf(x=x_axis, xi=xi_values, x0=2),
+		z = landau.pdf(x=x_axis, xi=xi_values, x_mpv=2),
 		x = x_axis,
 		y = xi_values,
 		colorbar = {"title": 'Landau PDF'}
@@ -55,6 +55,7 @@ fig.update_layout(
 	yaxis_title = 'x',
 )
 fig.show()
+
 ```
 
 ## Footnotes
