@@ -4,10 +4,11 @@ A simple and **pure Python implementation**¹ of [the Landau distribution](https
 
 ## Installation
 
-Clone this repo in `/wherever/you/like` and then run
+1. Run
 ```
-pip install -e /wherever/you/like/landaupy
+pip install landaupy
 ```
+2. Enjoy.
 
 ## Usage
 
