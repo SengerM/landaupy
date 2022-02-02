@@ -13,7 +13,7 @@ pip install -e /wherever/you/like/landaupy
 
 A simple example:
 
-```
+```python
 import landaupy.landau as landau
 import plotly.graph_objects as go
 import numpy as np
