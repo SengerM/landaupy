@@ -38,18 +38,18 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, sigma: float) -> float:
 
 	return step*suma
 
-def pdf_convolution_vectorized(x: float, mu: float, eta: float, sigma: float):
-	if any([not isinstance(arg, (int,float)) for arg in [x,mu,eta,sigma]]):
-		raise TypeError('All arguments must be float numbers.')
-	convolution_steps = 100 if sigma<3*eta else int(100*sigma/eta/3) # In the original code this is called `np` but this name is usually reserved for numpy in Python.
-	if convolution_steps > 99999: 
-		convolution_steps = 99999
-	convolution_steps = int(convolution_steps)
+def pdf(x, mu: float, eta: float, sigma: float):
+	"""Vectorized version of the langauss PDF function, adapted from https://root.cern.ch/doc/master/langaus_8C.html"""
+	if any([not isinstance(arg, (int,float)) for arg in [mu,eta,sigma]]):
+		raise TypeError(f'`mu`, `eta` and `sigma` must be scalar numbers, they are {type(mu),type(eta),type(sigma)} respectively.')
+	if not isinstance(x, (int, float, np.ndarray)):
+		raise TypeError(f'`x` must be either a number or a numpy array, received object of type {type(x)}.')
+	if isinstance(x, (int, float)):
+		x = np.array([x])
 	mpc = mu+0.22278298*eta
 	sc = 8
 	xlow = x - sc*sigma
 	xupp = x + sc*sigma
-	step = (xupp-xlow)/convolution_steps
-	xx = np.arange(xlow,xupp,step)
-	result = step*sum(landau_pdf(xx, mpc, eta)/eta*gaussian_pdf(x, xx, sigma))
-	return result
+	xx = np.linspace(xlow, xupp, 111)
+	result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), mpc, eta).reshape(xx.shape)/eta*gaussian_pdf(x, xx, sigma)).sum(axis=0)
+	return np.squeeze(result)
