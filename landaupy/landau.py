@@ -220,7 +220,7 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 		)
 	)
 
-def samples(x_mpv: float, xi: float, n_samples: int):
+def sample(x_mpv: float, xi: float, n_samples: int):
 	"""Generate samples from a Landau distribution.
 	
 	Parameters

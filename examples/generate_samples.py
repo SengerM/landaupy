@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 
 fig = go.Figure()
 for x_mpv, xi in zip([1,20,30],[1,4,2]):
-		samples = landau.samples(x_mpv, xi, 9999)
+		samples = landau.sample(x_mpv, xi, 9999)
 
 		fig.add_trace(
 			go.Histogram(
@@ -38,7 +38,7 @@ fig.show()
 
 fig = go.Figure()
 for x_mpv, xi, sigma in zip([1,20,30],[1,4,2],[1,3,9]):
-		samples = langauss.samples(x_mpv, xi, sigma, 9999)
+		samples = langauss.sample(x_mpv, xi, sigma, 9999)
 
 		fig.add_trace(
 			go.Histogram(

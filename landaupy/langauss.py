@@ -138,7 +138,7 @@ def cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float, lower_n_xi
 		)
 	)
 
-def samples(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples: int):
+def sample(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples: int):
 	"""Generate samples from a langauss distribution.
 	
 	Parameters

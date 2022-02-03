@@ -44,6 +44,12 @@ cdf = landau.cdf(
 )
 print(cdf)
 ```
+Random samples can also be generated:
+```python
+from landaupy import landau
+
+samples = landau.sample(x_mpv=0, xi=3, n_samples=9999)
+```
 For more, see [the examples](examples).
 
 ### Langauss distribution
@@ -80,6 +86,12 @@ cdf = langauss.cdf(
 	gauss_sigma = 3
 )
 print(cdf)
+```
+Random samples can also be generated:
+```python
+from landaupy import langauss
+
+samples = langauss.sample(x_mpv=0, xi=3, n_samples=9999)
 ```
 For more, see [the examples](examples).
 
