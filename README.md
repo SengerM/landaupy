@@ -96,7 +96,7 @@ Random samples can also be generated:
 ```python
 from landaupy import langauss
 
-samples = langauss.sample(x_mpv=0, xi=1, sigma=2, 9999)
+samples = langauss.sample(landau_x_mpv=0, landau_xi=1, gauss_sigma=2, 9999)
 ```
 For more, see [the examples](examples).
 
