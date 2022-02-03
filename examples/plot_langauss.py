@@ -1,4 +1,4 @@
-import landaupy.langauss as langauss
+from landaupy import langauss
 import plotly.graph_objects as go
 import numpy as np
 

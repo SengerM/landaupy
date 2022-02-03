@@ -1,4 +1,4 @@
-import landaupy.landau as landau
+from landaupy import landau
 import plotly.graph_objects as go
 import numpy as np
 

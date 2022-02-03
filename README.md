@@ -16,7 +16,7 @@ See [the examples](examples).
 
 A simple example of the Landau distribution:
 ```python
-import landaupy.landau as landau
+from landaupy import landau
 import numpy as np
 
 pdf = landau.pdf(x=1,x_mpv=2,xi=3) # Calculate in a single point.
@@ -31,7 +31,7 @@ print(pdf)
 ```
 The Landau cumulative distribution function is also available:
 ```python
-import landaupy.landau as landau
+from landaupy import landau
 import numpy as np
 
 cdf = landau.cdf(x=1,x_mpv=2,xi=3) # Calculate in a single point.
@@ -51,7 +51,7 @@ For more, see [the examples](examples).
 I also implemented the so called **langauss** distribution which is the convolution of a Gaussian and a Landau, useful when working with real life particle detectors. The usage is similar:
 A simple example of the Landau distribution:
 ```python
-import landaupy.langauss as langauss
+from landaupy import langauss
 import numpy as np
 
 pdf = langauss.pdf(x=1,landau_x_mpv=2,landau_xi=3,gauss_sigma=3) # Calculate in a single point.
@@ -67,7 +67,7 @@ print(pdf)
 ```
 The Landau cumulative distribution function is also available:
 ```python
-import landaupy.langauss as langauss
+from landaupy import langauss
 import numpy as np
 
 cdf = langauss.cdf(x=1,landau_x_mpv=2,landau_xi=3,gauss_sigma=3) # Calculate in a single point.
@@ -89,10 +89,10 @@ Despite this implementation is based in the original from Root, I made a few cha
 
 ### Normalization
 
-One of the things I changed is the normalization of the `langauss.pdf` distribution such that it integrates to 1. **All the PDFs in this package integrate to 1**. You can verify the normalization with the following code:
+One of the things I changed is the normalization of the `langauss.pdf` distribution such that it integrates to 1. **All the PDFs in this package integrate to 1**. You can verify the normalization with the following code, which integrates the PDFs:
 ```python
-import landaupy.landau as landau
-import landaupy.langauss as langauss
+from landaupy import landau
+from landaupy import langauss
 import numpy as np
 import scipy.integrate as integrate
 import warnings
@@ -102,7 +102,7 @@ with warnings.catch_warnings():
 	# Silence warnings since the numerical integrations between -inf and +inf are prompt to show some warnings.
 	for x_mpv in [0,10,55]:
 		for xi in [1,2,10]:
-			# Integrate to verify normalization (check also how fast it does the calculation):
+			# Integrate to verify normalization:
 			print(f'x_mpv={x_mpv}, xi={xi} → integral(landau.pdf) = {integrate.quad(lambda x: landau.pdf(x, x_mpv=x_mpv, xi=xi), -float("inf"), float("inf"))[0]}')
 			for sigma in [.1,1,5,10]:
 				print(f'x_mpv={x_mpv}, xi={xi}, sigma={sigma} → integral(langauss.pdf) = {integrate.quad(lambda x: langauss.pdf(x, landau_x_mpv=x_mpv, landau_xi=xi, gauss_sigma=sigma), -float("inf"), float("inf"))[0]}')
