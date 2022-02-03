@@ -58,3 +58,35 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 	xx = np.linspace(xlow, xupp, 111)
 	result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
 	return np.squeeze(result)
+
+def cdf_brute_force(x: float, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
+	"""Landau cumulative distribution function (the integral of the PDF between -inf and x) calculated by brute-force. This function should be avoided as it is very slow."""
+	from scipy.integrate import quad
+	integrand = lambda X: pdf(X, landau_x_mpv, landau_xi, gauss_sigma)
+	def _cdf(x):
+		return quad(integrand, -float('inf'), x)
+	_cdf = np.vectorize(_cdf)
+	integral, error = _cdf(x)
+	return integral
+
+def cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float, lower_n_xi_sigma: float=4, dx_n_xi: float=4):
+	"""Fast langauss cumulative distribution function.
+	"""
+	if any([not isinstance(arg, (int,float)) for arg in [landau_x_mpv,landau_xi,gauss_sigma]]):
+		raise TypeError(f'`landau_x_mpv`, `landau_xi` and `gauss_sigma` must be scalar numbers, they are {type(landau_x_mpv),type(landau_xi),type(gauss_sigma)} respectively.')
+	if not isinstance(x, (int, float, np.ndarray)):
+		raise TypeError(f'`x` must be either a number or a numpy array, received object of type {type(x)}.')
+	if isinstance(x, (int, float)):
+		x = np.array([x])
+	x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
+	x_high = x
+	dx = landau_xi/dx_n_xi
+	xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
+	xx[xx>x_high] = float('NaN')
+	return np.squeeze(
+		np.trapz(
+			x = xx,
+			y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]),landau_x_mpv, landau_xi, gauss_sigma).reshape(xx.shape),
+			axis = 0,
+		)
+	)
