@@ -42,7 +42,7 @@ cdf = landau.cdf(
 	x_mpv = 2,
 	xi = 3
 )
-print(pdf)
+print(cdf)
 ```
 For more, see [the examples](examples).
 
@@ -79,7 +79,7 @@ cdf = langauss.cdf(
 	landau_xi = 3,
 	gauss_sigma = 3
 )
-print(pdf)
+print(cdf)
 ```
 For more, see [the examples](examples).
 
