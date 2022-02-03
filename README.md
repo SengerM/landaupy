@@ -4,98 +4,84 @@ A simple and **pure Python implementation**¹ of [the Landau distribution](https
 
 ## Installation
 
-1. Run
 ```
 pip install landaupy
 ```
-2. Enjoy.
 
 ## Usage
 
+See [the examples](examples).
+
 ### Landau distribution
 
-A simple example of the **Landau distribution**:
-
+A simple example of the Landau distribution:
 ```python
 import landaupy.landau as landau
-import plotly.graph_objects as go
 import numpy as np
 
-print(landau.pdf(x=1,x_mpv=2,xi=3)) # Calculate in a single point.
+pdf = landau.pdf(x=1,x_mpv=2,xi=3) # Calculate in a single point.
+print(pdf)
 
-# Calculate along a Numpy array with fixed parameters:
-x_axis = np.linspace(-11,111,9999) # Since it is a "full numpy implementation" it is really fast, even for very large arrays like this one.
-fig = go.Figure()
-for xi in [1,2]:
-	for x_mpv in [0,55]:
-		fig.add_trace(
-			go.Scatter(
-				x = x_axis,
-				y = landau.pdf(x_axis, x_mpv=x_mpv, xi=xi),
-				name = f'ξ={xi}, x<sub>MPV</sub>={x_mpv}',
-			)
-		)
-fig.update_layout(
-	xaxis_title = 'x',
-	yaxis_title = 'Landau PDF',
+pdf = landau.pdf(
+	x = np.linspace(-11,111,9999), # Calculate along a numpy array.
+	x_mpv = 2, # `x_mpv` is also vectorized, you can put a numpy array here.
+	xi = 3 # `xi` is also vectorized, you can put a numpy array here.
 )
-fig.show()
-
-# Calculate along any of the parameters:
-x_axis = np.linspace(-11,111,999)
-xi_values = np.linspace(1,4)
-fig = go.Figure()
-fig.add_trace(
-	go.Heatmap(
-		z = landau.pdf(x=x_axis, xi=xi_values, x_mpv=2),
-		x = x_axis,
-		y = xi_values,
-		colorbar = {"title": 'Landau PDF'}
-	)
-)
-fig.update_layout(
-	xaxis_title = 'ξ',
-	yaxis_title = 'x',
-)
-fig.show()
+print(pdf)
 ```
+The Landau cumulative distribution function is also available:
+```python
+import landaupy.landau as landau
+import numpy as np
+
+cdf = landau.cdf(x=1,x_mpv=2,xi=3) # Calculate in a single point.
+print(cdf)
+
+cdf = landau.cdf(
+	x = np.linspace(-11,111,999), # Calculate along a numpy array.
+	x_mpv = 2,
+	xi = 3
+)
+print(pdf)
+```
+For more, see [the examples](examples).
 
 ### Langauss distribution
 
 I also implemented the so called **langauss** distribution which is the convolution of a Gaussian and a Landau, useful when working with real life particle detectors. The usage is similar:
+A simple example of the Landau distribution:
 ```python
 import landaupy.langauss as langauss
-import landaupy.landau as landau
-import plotly.graph_objects as go
 import numpy as np
 
-print(langauss.pdf(5, 0, 1, 2)) # Calculate the function in a single point.
+pdf = langauss.pdf(x=1,landau_x_mpv=2,landau_xi=3,gauss_sigma=3) # Calculate in a single point.
+print(pdf)
 
-x_axis = np.linspace(-33,55,999)
-fig = go.Figure()
-for x_mpv in [0,22]:
-	for xi in [1,3]:
-		for sigma in [1,5]:
-			fig.add_trace(
-				go.Scatter(
-					x = x_axis,
-					y = langauss.pdf(x=x_axis, landau_x_mpv=x_mpv, landau_xi=xi, gauss_sigma=sigma), # Calculate the function very fast over a numpy array.
-					name = f'Langauss x<sub>MPV</sub>={x_mpv}, ξ={xi}, σ={sigma}',
-				)
-			)
-		fig.add_trace(
-			go.Scatter(
-				x = x_axis,
-				y = landau.pdf(x_axis, x_mpv, xi),
-				name = f'Landau x<sub>MPV</sub>={x_mpv}, ξ={xi}',
-			)
-		)
-fig.update_layout(
-	xaxis_title = 'x',
-	yaxis_title = 'PDF',
+pdf = langauss.pdf(
+	x = np.linspace(-11,111,999), # Calculate along a numpy array.
+	landau_x_mpv = 2,
+	landau_xi = 3,
+	gauss_sigma = 3
 )
-fig.show()
+print(pdf)
 ```
+The Landau cumulative distribution function is also available:
+```python
+import landaupy.langauss as langauss
+import numpy as np
+
+cdf = langauss.cdf(x=1,landau_x_mpv=2,landau_xi=3,gauss_sigma=3) # Calculate in a single point.
+print(cdf)
+
+cdf = langauss.cdf(
+	x = np.linspace(-11,111,99), # Calculate along a numpy array.
+	landau_x_mpv = 2,
+	landau_xi = 3,
+	gauss_sigma = 3
+)
+print(pdf)
+```
+For more, see [the examples](examples).
 
 ## Differences WRT the Root version
 
