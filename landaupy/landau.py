@@ -5,7 +5,7 @@
 import numpy as np
 
 def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
-	"""Non vectorized landau PDF calculation. This function should be avoided, this is almost a copy-paste from the original Root code in https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html only for testing purposes."""
+	"""Non vectorized Landau PDF calculation. **This function should be avoided**, this is almost a copy-paste from the original Root code in https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html only for testing purposes."""
 	if any([not isinstance(arg, (int,float)) for arg in [x,x_mpv,xi]]):
 		raise TypeError('All arguments must be float numbers.')
 	
@@ -58,10 +58,23 @@ def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
 	return denlan / xi
 
 def pdf(x, x_mpv, xi):
-	"""Vectorized version of the landau PDF function, adapted from https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html
-	x: float, numpy array. Value where to calculate the PDF.
-	x_mpv: float, numpy array. Location of the peak, i.e. the most probable value (MPV).
-	xi: float, numpy array. Width of the distribution."""
+	"""Landau probability density function (PDF). The algorithm was
+	adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html).
+
+	Parameters
+	----------
+	x: float, numpy array
+		Point (or points) where to calculate the PDF.
+	x_mpv: float, numpy array
+		Position of the most probable value (MPV) of the Landau distribution.
+	xi: float, numpy array
+		Parameter $xi$ of the Landau distribution, it is a measure of its width.
+
+	Returns
+	-------
+	landau_pdf: float, numpy array
+		Value of the Landau PDF.
+	"""
 	def denlan_1(v):
 		"""Calculates denlan when v < -5.5. If v is outside this range, NaN value is returned."""
 		a1 = (0.04166666667, -0.01996527778, 0.02709538966)
@@ -147,8 +160,8 @@ def pdf(x, x_mpv, xi):
 	
 	return np.squeeze(denlan/xi)
 
-def cdf_brute_force(x, x_mpv, xi):
-	"""Landau cumulative distribution function (the integral of the PDF between -inf and x) calculated by brute-force. This function should be avoided as it is very slow."""
+def automatic_cdf(x, x_mpv, xi):
+	"""Landau cumulative distribution function (the integral of the PDF between -inf and x) calculated by brute-force. **This function should be avoided** as it is very slow, only here for testing purposes."""
 	from scipy.integrate import quad
 	integrand = lambda X: pdf(X, x_mpv, xi)
 	def _cdf(x):
@@ -158,10 +171,34 @@ def cdf_brute_force(x, x_mpv, xi):
 	return integral
 
 def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
-	"""Fast Landau cumulative distribution function.
-	x, x_mpv and xi are the same as for the landau.pdf function.
-	lower_n_xi: The numeric integration lower limit is dependent on xi in the following way `np.minimum(x, x_mpv - lower_n_xi*xi)`. The default value should work in any case.
-	dx_n_xi: The integration dx is calculated as `dx = xi/dx_n_xi`. The default value should work in any case.
+	"""Landau cumulative distribution function (CDF). 
+
+	Parameters
+	----------
+	x: float, numpy array
+		Point (or points) where to calculate the CDF.
+	x_mpv: float
+		Position of the most probable value (MPV) of the Landau distribution.
+	xi: float
+		Parameter $xi$ of the Landau distribution, it is a measure of its width.
+	lower_n_xi: float, default 4
+		The numeric integration lower limit is dependent on `xi` in the 
+		following way `np.minimum(x, x_mpv - lower_n_xi*xi)`. The default 
+		value should work in any case but if you find troubles you can 
+		change it. Increasing `lower_n_xi` will extend the integration 
+		towards -infinity yielding more accurate results but extending 
+		the computation time.
+	dx_n_xi: float, default 9
+		The integration dx is calculated as `dx = xi/dx_n_xi`. The default 
+		value should work in any case but you can change it if you see
+		issues. Increasing `dx_n_xi` will produce a smaller dx and thus
+		more accurate results, but the computation time will also be
+		increased.
+
+	Returns
+	-------
+	landau_cdf: float, numpy array
+		Value of the Landau CDF.
 	"""
 	if any([not isinstance(arg, (int,float)) for arg in [x_mpv,xi]]):
 		raise TypeError('`x_mpv` and `xi` must be numbers.')
