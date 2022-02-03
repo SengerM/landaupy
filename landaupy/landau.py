@@ -161,7 +161,7 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 	"""Fast Landau cumulative distribution function.
 	x, x_mpv and xi are the same as for the landau.pdf function.
 	lower_n_xi: The numeric integration lower limit is dependent on xi in the following way `np.minimum(x, x_mpv - lower_n_xi*xi)`. The default value should work in any case.
-	dx_n_xi: The integration dx is calculated as `dx = 1/dx_n_xi/xi`. The default value should work in any case.
+	dx_n_xi: The integration dx is calculated as `dx = xi/dx_n_xi`. The default value should work in any case.
 	"""
 	if any([not isinstance(arg, (int,float)) for arg in [x_mpv,xi]]):
 		raise TypeError('`x_mpv` and `xi` must be numbers.')
@@ -171,7 +171,7 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 		x = np.array([x])
 	x_low = np.minimum(x, x_mpv - lower_n_xi*xi) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
 	x_high = x
-	dx = 1/dx_n_xi/xi
+	dx = xi/dx_n_xi
 	xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
 	xx[xx>x_high] = float('NaN')
 	return np.squeeze(
