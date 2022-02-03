@@ -4,10 +4,11 @@ A simple and **pure Python implementation**¹ of [the Landau distribution](https
 
 ## Installation
 
+To install the latest release:
 ```
 pip install landaupy
 ```
-To install the latest version that is currently in this repo, run
+To install the development version that is currently in this repo, run
 ```
 pip install git+https://github.com/SengerM/landaupy
 ```
@@ -130,4 +131,4 @@ One of the arguments of the `landau.pdf` function is `x_mpv`. This is really the
 
 ## Footnotes
 
-¹ Only extra requirement is [numpy](https://numpy.org/), which is trivial to install in my experience, and not any strange thing like C/C++→Python compilers/bridges, etc. that will fail or be hard to install.
+¹ The only extra requirements are [numpy](https://numpy.org/) and [scipy](https://scipy.org/), which are trivial to install in my experience (you probably already have them). But there is no need for any strange thing like C/C++→Python compilers/bridges, etc. that are hard to install and configure.
