@@ -1,5 +1,6 @@
 import numpy as np
 from .landau import pdf as landau_pdf
+from .samplers import sample_distribution_given_cdf
 
 def gaussian_pdf(x, mu, gauss_sigma):
 	return np.exp(-1/2*((x-mu)/gauss_sigma)**2)/gauss_sigma/(2*np.pi)**.5
@@ -136,3 +137,34 @@ def cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float, lower_n_xi
 			axis = 0,
 		)
 	)
+
+def samples(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples: int):
+	"""Generate samples from a langauss distribution.
+	
+	Parameters
+	----------
+	landau_x_mpv: float
+		The most probable value of the Landau component of the langauss
+		distribution from which to generate the samples.
+	landau_xi: float
+		The width of the Landau component of the langauss distribution
+		from which to generate the samples.
+	gauss_sigma: float
+		The standard deviation of the Gaussian component of the langauss
+		distribution from which to generate the samples.
+	n_samples: int
+		The number of samples to generate.
+	
+	Returns
+	-------
+	samples: float, numpy array
+		The samples from the langauss distribution.
+	"""
+	if any([not isinstance(arg, (int,float)) for arg in [landau_x_mpv,landau_xi,gauss_sigma]]):
+		raise TypeError(f'`landau_x_mpv`, `landau_xi` and `gauss_sigma` must be scalar numbers, they are {type(landau_x_mpv),type(landau_xi),type(gauss_sigma)} respectively.')
+	if not isinstance(n_samples, int):
+		raise TypeError(f'`n_samples` must be an integer number.')
+	if n_samples <= 0:
+		raise ValueError(f'`n_samples` must be >= 0.')
+	x_axis = np.linspace(landau_x_mpv - 6*(landau_xi+gauss_sigma),landau_x_mpv+(55*landau_xi+6*gauss_sigma),333)
+	return sample_distribution_given_cdf(x_axis, cdf(x_axis,landau_x_mpv,landau_xi,gauss_sigma), n_samples)
