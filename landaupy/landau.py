@@ -3,6 +3,7 @@
 # https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html
 
 import numpy as np
+from .samplers import sample_distribution_given_cdf
 
 def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
 	"""Non vectorized Landau PDF calculation. **This function should be avoided**, this is almost a copy-paste from the original Root code in https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html only for testing purposes."""
@@ -218,3 +219,31 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 			axis = 0,
 		)
 	)
+
+def samples(x_mpv: float, xi: float, n_samples: int):
+	"""Generate samples from a Landau distribution.
+	
+	Parameters
+	----------
+	x_mpv: float
+		The most probable value of the Landau distribution from which to 
+		generate the samples.
+	xi: float
+		The width of the Landau distribution from which to generate the
+		samples.
+	n_samples: int
+		The number of samples to generate.
+	
+	Returns
+	-------
+	samples: float, numpy array
+		The samples from the Landau distribution.
+	"""
+	if any([not isinstance(arg, (int,float)) for arg in [x_mpv,xi]]):
+		raise TypeError('`x_mpv` and `xi` must be numbers.')
+	if not isinstance(n_samples, int):
+		raise TypeError(f'`n_samples` must be an integer number.')
+	if n_samples <= 0:
+		raise ValueError(f'`n_samples` must be >= 0.')
+	x_axis = np.linspace(x_mpv-5*xi,x_mpv+55*xi,999)
+	return sample_distribution_given_cdf(x_axis, cdf(x_axis,x_mpv,xi), n_samples)
