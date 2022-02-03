@@ -50,6 +50,8 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 		raise TypeError(f'`x` must be either a number or a numpy array, received object of type {type(x)}.')
 	if isinstance(x, (int, float)):
 		x = np.array([x])
+	if gauss_sigma == 0: # There is no Gaussian...
+		return landau_pdf(x, landau_x_mpv, landau_xi)
 	gaussian_extension = 8 # Number of sigmas to extend around `x` when performing the convolution.
 	xlow = x - gaussian_extension*gauss_sigma
 	xupp = x + gaussian_extension*gauss_sigma
