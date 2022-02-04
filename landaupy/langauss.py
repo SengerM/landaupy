@@ -20,7 +20,7 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, gauss_sigma: float) -> f
 	mpshift = 0 #-0.22278298 # Landau maximum location shift in original code is wrong, since the shift does not depend on mu only
 
 	np = 100 # number of convolution steps
-	sc = 8 # convolution extends to +-sc Gaussian sigmas
+	sc = 5 # convolution extends to +-sc Gaussian sigmas
 
 	# Convolution steps have to be increased if gauss_sigma > eta * 5 to get stable solution that does not oscillate, addresses #1
 	if gauss_sigma > 3 * eta:
