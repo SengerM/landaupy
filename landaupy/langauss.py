@@ -4,7 +4,10 @@ from .samplers import sample_distribution_given_cdf
 from . import _check_types as ct
 
 def gaussian_pdf(x, mu, sigma):
-	return np.exp(-1/2*((x-mu)/sigma)**2)/sigma/(2*np.pi)**.5
+	if sigma<=0:
+		return x*float('NaN')
+	else:
+		return np.exp(-1/2*((x-mu)/sigma)**2)/sigma/(2*np.pi)**.5
 
 def pdf_not_vectorized(x: float, mu: float, eta: float, gauss_sigma: float) -> float:
 	"""Non vectorized and rustic langaus PDF calculation. **This function 
