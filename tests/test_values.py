@@ -8,6 +8,7 @@ DEBUGGING_PLOTS = False
 
 if DEBUGGING_PLOTS == True:
 	import plotly.graph_objects as go
+	from plotly.subplots import make_subplots
 
 def areclose(A, B, rel_tol=1e-09, abs_tol=0.0) -> bool:
 	"""An extension of `math.isclose` to arrays."""
@@ -23,7 +24,7 @@ class TestLandauValues(unittest.TestCase):
 		xi_to_test = [1e-22,1e-3,1,11,111,1e5,1e22]
 		
 		if DEBUGGING_PLOTS == True:
-			fig = go.Figure()
+			fig = make_subplots(rows=2, cols=1)
 			fig.update_layout(title='Landau PDF')
 		
 		for x_mpv in x_mpv_to_test:
@@ -36,8 +37,9 @@ class TestLandauValues(unittest.TestCase):
 					if DEBUGGING_PLOTS == True:
 						if 'legend_group_number' not in locals():
 							legend_group_number = 0
-						fig.add_trace(go.Scatter(x=x, y=pdf_by_landaupy, name=f'landaupy x_mpv={x_mpv} xi={xi}', legendgroup=f'{legend_group_number}'))
-						fig.add_trace(go.Scatter(x=x, y=pdf_reference, name=f'reference x_mpv={x_mpv} xi={xi}', legendgroup=f'{legend_group_number}'))
+						fig.add_trace(go.Scatter(x=x, y=pdf_by_landaupy, name=f'landaupy x_mpv={x_mpv} xi={xi}', legendgroup=f'{legend_group_number}'), row=1, col=1)
+						fig.add_trace(go.Scatter(x=x, y=pdf_reference, name=f'reference x_mpv={x_mpv} xi={xi}', legendgroup=f'{legend_group_number}'), row=1, col=1)
+						fig.add_trace(go.Scatter(x=x, y=(pdf_by_landaupy-pdf_reference)/pdf_by_landaupy, name=f'(landaupy-reference)/landaupy', legendgroup=f'{legend_group_number}'), row=2, col=1)
 						legend_group_number += 1
 					
 					self.assertTrue(
@@ -79,22 +81,23 @@ class TestLangaussValues(unittest.TestCase):
 		sigma_to_test = xi_to_test
 		
 		if DEBUGGING_PLOTS == True:
-			fig = go.Figure()
+			fig = make_subplots(rows=2, cols=1)
 			fig.update_layout(title='Langauss PDF')
 		
 		for x_mpv in x_mpv_to_test:
 			for xi in xi_to_test:
 				for sigma in sigma_to_test:
 					with self.subTest(i={'x_mpv': x_mpv, 'xi': xi, 'sigma': sigma}):
-						x = np.linspace(x_mpv-5*(xi+sigma), x_mpv+22*xi+5*sigma,9)
+						x = np.linspace(x_mpv-3*(xi+sigma), x_mpv+22*xi+5*sigma,9)
 						pdf_by_landaupy = langauss.pdf(x, x_mpv, xi, sigma)
 						pdf_reference = np.array([langauss.pdf_not_vectorized(x, x_mpv, xi, sigma) for x in x])
 						
 						if DEBUGGING_PLOTS == True:
 							if 'legend_group_number' not in locals():
 								legend_group_number = 0
-							fig.add_trace(go.Scatter(x=x, y=pdf_by_landaupy, name=f'landaupy x_mpv={x_mpv} xi={xi} sigma={sigma}', legendgroup=f'{legend_group_number}'))
-							fig.add_trace(go.Scatter(x=x, y=pdf_reference, name=f'reference x_mpv={x_mpv} xi={xi} sigma={sigma}', legendgroup=f'{legend_group_number}'))
+							fig.add_trace(go.Scatter(x=x, y=pdf_by_landaupy, name=f'landaupy x_mpv={x_mpv} xi={xi} sigma={sigma}', legendgroup=f'{legend_group_number}'), row=1, col=1)
+							fig.add_trace(go.Scatter(x=x, y=pdf_reference, name=f'reference x_mpv={x_mpv} xi={xi} sigma={sigma}', legendgroup=f'{legend_group_number}'), row=1, col=1)
+							fig.add_trace(go.Scatter(x=x, y=(pdf_by_landaupy-pdf_reference)/pdf_by_landaupy, name=f'(landaupy-reference)/landaupy', legendgroup=f'{legend_group_number}'), row=2, col=1)
 							legend_group_number += 1
 						
 						self.assertTrue(
