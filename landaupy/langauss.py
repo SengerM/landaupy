@@ -135,18 +135,16 @@ def cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float, lower_n_xi
 	if isinstance(x, (int, float)):
 		x = np.array([x])
 	
-		x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
-		x_high = x
-		dx = landau_xi/dx_n_xi
-		xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
-		xx[xx>x_high] = float('NaN')
-		result = np.trapz(
-			x = xx,
-			y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]),landau_x_mpv, landau_xi, gauss_sigma).reshape(xx.shape),
-			axis = 0,
-		)
-	else:
-		result = x*float('NaN')
+	x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
+	x_high = x
+	dx = landau_xi/dx_n_xi
+	xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
+	xx[xx>x_high] = float('NaN')
+	result = np.trapz(
+		x = xx,
+		y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]),landau_x_mpv, landau_xi, gauss_sigma).reshape(xx.shape),
+		axis = 0,
+	)
 	return np.squeeze(result)
 
 def sample(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples: int):
