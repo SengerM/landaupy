@@ -52,7 +52,7 @@ class TestLangaussValues(unittest.TestCase):
 	"""Test if the functions are producing the correct values."""
 	def test_pdf(self):
 		x_mpv_to_test = [0]
-		xi_to_test = [.01,1]
+		xi_to_test = [.01,1,11]
 		sigma_to_test = xi_to_test
 		
 		if DEBUGGING_PLOTS == True:
@@ -63,7 +63,7 @@ class TestLangaussValues(unittest.TestCase):
 			for xi in xi_to_test:
 				for sigma in sigma_to_test:
 					with self.subTest(i={'x_mpv': x_mpv, 'xi': xi, 'sigma': sigma}):
-						x = np.linspace(x_mpv-5*xi, x_mpv+22*xi,9)
+						x = np.linspace(x_mpv-5*(xi+sigma), x_mpv+22*xi+5*sigma,9)
 						pdf_by_landaupy = langauss.pdf(x, x_mpv, xi, sigma)
 						pdf_reference = np.array([langauss.pdf_not_vectorized(x, x_mpv, xi, sigma) for x in x])
 						
