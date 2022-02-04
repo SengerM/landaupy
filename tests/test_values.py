@@ -88,7 +88,7 @@ class TestLangaussValues(unittest.TestCase):
 			for xi in xi_to_test:
 				for sigma in sigma_to_test:
 					with self.subTest(i={'x_mpv': x_mpv, 'xi': xi, 'sigma': sigma}):
-						x = np.linspace(x_mpv-3*(xi+sigma), x_mpv+22*xi+5*sigma,9)
+						x = np.linspace(x_mpv-2*(xi+sigma), x_mpv+22*xi+5*sigma,9)
 						pdf_by_landaupy = langauss.pdf(x, x_mpv, xi, sigma)
 						pdf_reference = np.array([langauss.pdf_not_vectorized(x, x_mpv, xi, sigma) for x in x])
 						
