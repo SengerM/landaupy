@@ -14,7 +14,7 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, gauss_sigma: float) -> f
 	"""
 	ct.check_are_instances({'x':x,'mu':mu,'eta':eta,'gauss_sigma':gauss_sigma}, (int, float))
 	
-	mpshift = -0.22278298 # Landau maximum location shift in original code is wrong, since the shift does not depend on mu only
+	mpshift = 0 #-0.22278298 # Landau maximum location shift in original code is wrong, since the shift does not depend on mu only
 
 	np = 100 # number of convolution steps
 	sc = 8 # convolution extends to +-sc Gaussian sigmas
@@ -38,7 +38,7 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, gauss_sigma: float) -> f
 	suma = 0
 	for i in range(1, int(np+1)):
 		xx = xlow + (i - 0.5) * step
-		fland = landau_pdf(xx, mpc, eta) / eta
+		fland = landau_pdf(xx, mpc, eta) # Here there was a division by `eta` that I removed because it produces a function that normalizes to 1/eta instead of 1.
 		suma += fland * gaussian_pdf(x, xx, gauss_sigma)
 
 	return step*suma
