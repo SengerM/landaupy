@@ -75,7 +75,13 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 		gaussian_extension = 8 # Number of sigmas to extend around `x` when performing the convolution.
 		xlow = x - gaussian_extension*gauss_sigma
 		xupp = x + gaussian_extension*gauss_sigma
-		xx = np.linspace(xlow, xupp, 111)
+		if gauss_sigma > 3*landau_xi:
+			n_values_convolution_axis = int(gauss_sigma/landau_xi/3) # To avoid instabilities, see https://github.com/SiLab-Bonn/pylandau/issues/1
+		else:
+			n_values_convolution_axis = 100 # Original value from Root implementation.
+		n_values_convolution_axis = max(n_values_convolution_axis, 100000) # Limit the maximum value.
+		xx = np.linspace(xlow, xupp, n_values_convolution_axis)
+		
 		result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
 	else:
 		result = x*float('NaN')
