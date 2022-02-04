@@ -1,14 +1,18 @@
 import numpy as np
 from .landau import pdf as landau_pdf
 from .samplers import sample_distribution_given_cdf
+from . import _check_types as ct
 
-def gaussian_pdf(x, mu, gauss_sigma):
-	return np.exp(-1/2*((x-mu)/gauss_sigma)**2)/gauss_sigma/(2*np.pi)**.5
+def gaussian_pdf(x, mu, sigma):
+	return np.exp(-1/2*((x-mu)/sigma)**2)/sigma/(2*np.pi)**.5
 
 def pdf_not_vectorized(x: float, mu: float, eta: float, gauss_sigma: float) -> float:
-	"""Non vectorized and rustic langaus PDF calculation. **This function should be avoided**, this is almost a copy-paste from the original Root code in https://root.cern.ch/doc/master/langaus_8C.html only for testing purposes."""
-	if any([not isinstance(arg, (int,float)) for arg in [x,mu,eta,gauss_sigma]]):
-		raise TypeError('All arguments must be float numbers.')
+	"""Non vectorized and rustic langaus PDF calculation. **This function 
+	should be avoided**, this is almost a copy-paste from [the original 
+	Root code](https://root.cern.ch/doc/master/langaus_8C.html) only for
+	testing purposes.
+	"""
+	ct.check_are_instances({'x':x,'mu':mu,'eta':eta,'gauss_sigma':gauss_sigma}, (int, float))
 	
 	mpshift = -0.22278298 # Landau maximum location shift in original code is wrong, since the shift does not depend on mu only
 
@@ -61,23 +65,30 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 	langauss_pdf: float, numpy array
 		Value of the langauss PDF.
 	"""
-	if any([not isinstance(arg, (int,float)) for arg in [landau_x_mpv,landau_xi,gauss_sigma]]):
-		raise TypeError(f'`landau_x_mpv`, `landau_xi` and `gauss_sigma` must be scalar numbers, they are {type(landau_x_mpv),type(landau_xi),type(gauss_sigma)} respectively.')
-	if not isinstance(x, (int, float, np.ndarray)):
-		raise TypeError(f'`x` must be either a number or a numpy array, received object of type {type(x)}.')
+	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float))
+	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
 	if gauss_sigma == 0: # There is no Gaussian...
-		return landau_pdf(x, landau_x_mpv, landau_xi)
-	gaussian_extension = 8 # Number of sigmas to extend around `x` when performing the convolution.
-	xlow = x - gaussian_extension*gauss_sigma
-	xupp = x + gaussian_extension*gauss_sigma
-	xx = np.linspace(xlow, xupp, 111)
-	result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
+		result = landau_pdf(x, landau_x_mpv, landau_xi)
+	elif gauss_sigma > 0 and landau_xi > 0:
+		gaussian_extension = 8 # Number of sigmas to extend around `x` when performing the convolution.
+		xlow = x - gaussian_extension*gauss_sigma
+		xupp = x + gaussian_extension*gauss_sigma
+		xx = np.linspace(xlow, xupp, 111)
+		result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
+	else:
+		result = x*float('NaN')
 	return np.squeeze(result)
 
-def automatic_cdf(x: float, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
-	"""Langauss cumulative distribution function (the integral of the PDF between -inf and x) calculated by brute-force. **This function should be avoided** as it is very slow, only here for testing purposes."""
+def automatic_cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
+	"""Langauss cumulative distribution function (the integral of the 
+	PDF between -inf and x) calculated by brute-force. **This function 
+	should be avoided** as it is very slow, only here for testing 
+	purposes.
+	"""
+	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float))
+	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	from scipy.integrate import quad
 	integrand = lambda X: pdf(X, landau_x_mpv, landau_xi, gauss_sigma)
 	def _cdf(x):
@@ -119,24 +130,24 @@ def cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float, lower_n_xi
 	landau_cdf: float, numpy array
 		Value of the Landau CDF.
 	"""
-	if any([not isinstance(arg, (int,float)) for arg in [landau_x_mpv,landau_xi,gauss_sigma]]):
-		raise TypeError(f'`landau_x_mpv`, `landau_xi` and `gauss_sigma` must be scalar numbers, they are {type(landau_x_mpv),type(landau_xi),type(gauss_sigma)} respectively.')
-	if not isinstance(x, (int, float, np.ndarray)):
-		raise TypeError(f'`x` must be either a number or a numpy array, received object of type {type(x)}.')
+	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma, 'lower_n_xi_sigma':lower_n_xi_sigma, 'dx_n_xi':dx_n_xi}, (int, float))
+	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
-	x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
-	x_high = x
-	dx = landau_xi/dx_n_xi
-	xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
-	xx[xx>x_high] = float('NaN')
-	return np.squeeze(
-		np.trapz(
+	
+		x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
+		x_high = x
+		dx = landau_xi/dx_n_xi
+		xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
+		xx[xx>x_high] = float('NaN')
+		result = np.trapz(
 			x = xx,
 			y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]),landau_x_mpv, landau_xi, gauss_sigma).reshape(xx.shape),
 			axis = 0,
 		)
-	)
+	else:
+		result = x*float('NaN')
+	return np.squeeze(result)
 
 def sample(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples: int):
 	"""Generate samples from a langauss distribution.
@@ -160,11 +171,9 @@ def sample(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples:
 	samples: float, numpy array
 		The samples from the langauss distribution.
 	"""
-	if any([not isinstance(arg, (int,float)) for arg in [landau_x_mpv,landau_xi,gauss_sigma]]):
-		raise TypeError(f'`landau_x_mpv`, `landau_xi` and `gauss_sigma` must be scalar numbers, they are {type(landau_x_mpv),type(landau_xi),type(gauss_sigma)} respectively.')
-	if not isinstance(n_samples, int):
-		raise TypeError(f'`n_samples` must be an integer number.')
-	if n_samples <= 0:
-		raise ValueError(f'`n_samples` must be >= 0.')
+	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float))
+	ct.check_is_instance(n_samples, 'n_samples', int)
+	if n_samples < 0:
+		raise ValueError(f'`n_samples` must be > 0.')
 	x_axis = np.linspace(landau_x_mpv - 6*(landau_xi+gauss_sigma),landau_x_mpv+(55*landau_xi+6*gauss_sigma),333)
 	return sample_distribution_given_cdf(x_axis, cdf(x_axis,landau_x_mpv,landau_xi,gauss_sigma), n_samples)

@@ -4,11 +4,14 @@
 
 import numpy as np
 from .samplers import sample_distribution_given_cdf
+from . import _check_types as ct
 
 def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
-	"""Non vectorized Landau PDF calculation. **This function should be avoided**, this is almost a copy-paste from the original Root code in https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html only for testing purposes."""
-	if any([not isinstance(arg, (int,float)) for arg in [x,x_mpv,xi]]):
-		raise TypeError('All arguments must be float numbers.')
+	"""Non vectorized Landau PDF calculation. **This function should be 
+	avoided**, this is almost a copy-paste from [the original Root code](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html)
+	only for testing purposes.
+	"""
+	ct.check_are_instances({'x':x,'x_mpv':x_mpv,'xi':xi}, (int, float))
 	
 	p1 = (0.4259894875, -0.1249762550, 0.03984243700, -0.006298287635, 0.001511162253)
 	q1 = (1.0, -0.3388260629, 0.09594393323, -0.01608042283, 0.003778942063)
@@ -145,6 +148,8 @@ def pdf(x, x_mpv, xi):
 		denlan[v<=300] = float('NaN')
 		return denlan
 	
+	ct.check_are_instances({'x':x, 'x_mpv':x, 'xi':xi}, (int, float, np.ndarray))
+	
 	x, x_mpv, xi = np.meshgrid(x,x_mpv,xi)
 	x_mpv = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
 	v = (x - x_mpv) / xi
@@ -161,8 +166,13 @@ def pdf(x, x_mpv, xi):
 	
 	return np.squeeze(denlan/xi)
 
-def automatic_cdf(x, x_mpv, xi):
-	"""Landau cumulative distribution function (the integral of the PDF between -inf and x) calculated by brute-force. **This function should be avoided** as it is very slow, only here for testing purposes."""
+def automatic_cdf(x, x_mpv: float, xi: float):
+	"""Landau cumulative distribution function (the integral of the PDF 
+	between -inf and x) calculated by brute-force. **This function should 
+	be avoided** as it is very slow, only here for testing purposes.
+	"""
+	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi}, (int, float))
+	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	from scipy.integrate import quad
 	integrand = lambda X: pdf(X, x_mpv, xi)
 	def _cdf(x):
@@ -201,10 +211,8 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 	landau_cdf: float, numpy array
 		Value of the Landau CDF.
 	"""
-	if any([not isinstance(arg, (int,float)) for arg in [x_mpv,xi]]):
-		raise TypeError('`x_mpv` and `xi` must be numbers.')
-	if not isinstance(x, (int, float, np.ndarray)):
-		raise TypeError(f'`x` must be either a number or a numpy array, received object of type {type(x)}.')
+	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi}, (int, float))
+	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
 	x_low = np.minimum(x, x_mpv - lower_n_xi*xi) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
@@ -239,11 +247,9 @@ def sample(x_mpv: float, xi: float, n_samples: int):
 	samples: float, numpy array
 		The samples from the Landau distribution.
 	"""
-	if any([not isinstance(arg, (int,float)) for arg in [x_mpv,xi]]):
-		raise TypeError('`x_mpv` and `xi` must be numbers.')
-	if not isinstance(n_samples, int):
-		raise TypeError(f'`n_samples` must be an integer number.')
+	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi}, (int, float))
+	ct.check_is_instance(n_samples, 'n_samples', (int))
 	if n_samples <= 0:
-		raise ValueError(f'`n_samples` must be >= 0.')
+		raise ValueError(f'`n_samples` must be > 0.')
 	x_axis = np.linspace(x_mpv-5*xi,x_mpv+55*xi,999)
 	return sample_distribution_given_cdf(x_axis, cdf(x_axis,x_mpv,xi), n_samples)
