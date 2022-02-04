@@ -129,6 +129,10 @@ with warnings.catch_warnings():
 
 One of the arguments of the `landau.pdf` function is `x_mpv`. This is really the *x* position of the Most Probable Value (MPV), which is usually what one is interested in. In the original implementation from Root the parameter is called `x0` and it is close to the MPV but it is not the MPV. The relation between them is given by `x0 = x_mpv + 0.22278298*xi` and I stole it from [the Root implementation of the `langauss` function](https://root.cern.ch/doc/master/langaus_8C.html).
 
+### Naming
+
+I renamed *langau* to *langauss*, otherwise a simple typo can change the distribution you intend to use. Also renamed some of the parameters with more meaningful names.
+
 ## Footnotes
 
 ¹ The only extra requirements are [numpy](https://numpy.org/) and [scipy](https://scipy.org/), which are trivial to install in my experience (you probably already have them). But there is no need for any strange thing like C/C++→Python compilers/bridges, etc. that are hard to install and configure.
