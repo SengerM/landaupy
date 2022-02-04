@@ -78,6 +78,11 @@ def pdf(x, x_mpv, xi):
 	-------
 	landau_pdf: float, numpy array
 		Value of the Landau PDF.
+	
+	Error handling
+	--------------
+	Rises `TypeError` if the parameters are not within the accepted types.
+	Non valid values (e.g. xi<0) rise no errors but return `float('NaN')`.
 	"""
 	def denlan_1(v):
 		"""Calculates denlan when v < -5.5. If v is outside this range, NaN value is returned."""
@@ -151,11 +156,14 @@ def pdf(x, x_mpv, xi):
 	ct.check_are_instances({'x':x, 'x_mpv':x, 'xi':xi}, (int, float, np.ndarray))
 	
 	x, x_mpv, xi = np.meshgrid(x,x_mpv,xi)
+	x = x.astype(float)
+	x_mpv = x_mpv.astype(float)
+	xi = xi.astype(float)
 	x_mpv = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
 	v = (x - x_mpv) / xi
 	
 	denlan = x*float('NaN') # Initialize.
-	denlan[xi<=0] = 0
+	xi[xi<=0] = float('NaN') # These are non valid values.
 	
 	limits = (-float('inf'),  -5.5,       -1,        1,        5,       12,       50,      300, float('inf'))
 	formulas = (denlan_1, denlan_2, denlan_3, denlan_4, denlan_5, denlan_6, denlan_7, denlan_8)
