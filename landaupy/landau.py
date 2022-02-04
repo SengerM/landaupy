@@ -5,6 +5,7 @@
 import numpy as np
 from .samplers import sample_distribution_given_cdf
 from . import _check_types as ct
+import warnings
 
 def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
 	"""Non vectorized Landau PDF calculation. **This function should be 
@@ -168,9 +169,11 @@ def pdf(x, x_mpv, xi):
 	limits = (-float('inf'),  -5.5,       -1,        1,        5,       12,       50,      300, float('inf'))
 	formulas = (denlan_1, denlan_2, denlan_3, denlan_4, denlan_5, denlan_6, denlan_7, denlan_8)
 	
-	for k, formula in enumerate(formulas):
-		indices = (limits[k]<=v)&(v<limits[k+1])
-		denlan[indices] = formula(v[indices])
+	with warnings.catch_warnings():
+		warnings.simplefilter("ignore") # I don't want to see the warnings of numpy, anyway it will fill with `NaN` values so it is fine.
+		for k, formula in enumerate(formulas):
+			indices = (limits[k]<=v)&(v<limits[k+1])
+			denlan[indices] = formula(v[indices])
 	
 	return np.squeeze(denlan/xi)
 
