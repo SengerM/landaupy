@@ -67,27 +67,42 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 	-------
 	langauss_pdf: float, numpy array
 		Value of the langauss PDF.
+	
+	Error handling
+	--------------
+	Rises `TypeError` if the parameters are not within the accepted types.
+	Non valid values (e.g. sigma<0) rise no errors but return `float('NaN')`.
+	
+	Notes
+	-----
+	For certain values of the parameters an approximation is returned. This
+	is to avoid numerical instabilities and to increase the calculation
+	speed. Such approximations are:
+	- If `gauss_sigma < 1e-6*landau_xi` it returns a Landau.
+	- If `gauss_sigma > 10000*landau_xi` it returns a Gaussian.
 	"""
 	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float))
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
-	if gauss_sigma == 0: # There is no Gaussian...
-		result = landau_pdf(x, landau_x_mpv, landau_xi)
-	elif gauss_sigma > 0 and landau_xi > 0:
-		gaussian_extension = 8 # Number of sigmas to extend around `x` when performing the convolution.
-		xlow = x - gaussian_extension*gauss_sigma
-		xupp = x + gaussian_extension*gauss_sigma
-		if gauss_sigma > 3*landau_xi:
-			n_values_convolution_axis = int(gauss_sigma/landau_xi/3) # To avoid instabilities, see https://github.com/SiLab-Bonn/pylandau/issues/1
-		else:
-			n_values_convolution_axis = 100 # Original value from Root implementation.
-		n_values_convolution_axis = max(n_values_convolution_axis, 100000) # Limit the maximum value.
-		xx = np.linspace(xlow, xupp, n_values_convolution_axis)
-		
-		result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
-	else:
+	if gauss_sigma < 0 or landau_xi <= 0:
 		result = x*float('NaN')
+	else: # sigma>=0 AND xi>0
+		if gauss_sigma < 1e-6*landau_xi: # The Gaussian contribution is negligible...
+			result = landau_pdf(x, landau_x_mpv, landau_xi)
+		elif gauss_sigma > 10000*landau_xi: # The Landau contribution is negligible...
+			result = gaussian_pdf(x, landau_x_mpv, gauss_sigma)
+		else: # All cases where Landau and Gauss contributions are important simultaneously...
+			gaussian_extension = 5 # Number of sigmas to extend around `x` when performing the convolution.
+			xlow = x - gaussian_extension*gauss_sigma
+			xupp = x + gaussian_extension*gauss_sigma
+			if gauss_sigma > 3*landau_xi:
+				n_values_convolution_axis = int(gauss_sigma/landau_xi/3) # To avoid instabilities, see https://github.com/SiLab-Bonn/pylandau/issues/1
+			else:
+				n_values_convolution_axis = 100 # Original value from Root implementation.
+			n_values_convolution_axis = max(n_values_convolution_axis, 100000) # Limit the maximum value.
+			xx = np.linspace(xlow, xupp, n_values_convolution_axis)
+			result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
 	return np.squeeze(result)
 
 def automatic_cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
