@@ -154,7 +154,7 @@ def pdf(x, x_mpv, xi):
 		denlan[v<=300] = float('NaN')
 		return denlan
 	
-	ct.check_are_instances({'x':x, 'x_mpv':x, 'xi':xi}, (int, float, np.ndarray))
+	ct.check_are_instances({'x':x, 'x_mpv':x_mpv, 'xi':xi}, (int, float, np.ndarray))
 	
 	x, x_mpv, xi = np.meshgrid(x,x_mpv,xi)
 	x = x.astype(float)
