@@ -169,7 +169,7 @@ def landau_pdf(x):
 	
 	return np.squeeze(result)
 
-def landau_cdf(x, x_min: float=-5, dx: float=1):
+def landau_cdf(x, x_min: float=-5, x_max: float=9999, dx: float=1):
 	"""Calculates the CDF of the "basic" Landau distribution, i.e. the 
 	distribution when the location parameter is 0 and the scale parameter 
 	is 1. The algorithm was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html).
@@ -180,9 +180,14 @@ def landau_cdf(x, x_min: float=-5, dx: float=1):
 		Point in which to calculate the function.
 	x_min: float, default -5
 		Value of $x$ from which to start the integration. Reduce for more
-		precision.
+		precision. Values of `x` below `x_min` will return `0`.
+	x_max: float, default 9999
+		Value at which stop the integration. Values of `x` above `x_max`
+		will return `1`.
 	dx: float, default 1
-		Step for the integration. Reduce for more precision.
+		Step for the integration. Reduce for more precision. Although 1
+		may look like a very big number, it should be more than enough 
+		for most applications.
 	
 	Returns
 	-------
@@ -211,7 +216,7 @@ def landau_cdf(x, x_min: float=-5, dx: float=1):
 	x_is_finite_indices = np.isfinite(x)
 	if x_is_finite_indices.any():
 		x_low = np.minimum(x[x_is_finite_indices], x_min).astype(float)
-		x_high = x[x_is_finite_indices]
+		x_high = np.minimum(x[x_is_finite_indices], x_max).astype(float)
 		xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
 		xx[xx>x_high] = float('NaN')
 		result[x_is_finite_indices] = np.trapz(
@@ -219,6 +224,8 @@ def landau_cdf(x, x_min: float=-5, dx: float=1):
 			y = landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1])).reshape(xx.shape),
 			axis = 0,
 		)
+	result[x<x_min] = 0
+	result[x>x_max] = 1
 	result[np.isneginf(x)] = 0
 	result[np.isposinf(x)] = 1
 	return np.squeeze(result)
