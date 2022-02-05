@@ -1,7 +1,8 @@
 import numpy as np
-from .landau import pdf as landau_pdf
+from . import landau
 from .samplers import sample_distribution_given_cdf
 from . import _check_types as ct
+from scipy.special import erf
 
 def gaussian_pdf(x, mu, sigma):
 	if sigma<=0:
@@ -41,7 +42,7 @@ def pdf_not_vectorized(x: float, mu: float, eta: float, gauss_sigma: float) -> f
 	suma = 0
 	for i in range(1, int(np+1)):
 		xx = xlow + (i - 0.5) * step
-		fland = landau_pdf(xx, mpc, eta) # Here there was a division by `eta` that I removed because it produces a function that normalizes to 1/eta instead of 1.
+		fland = landau.pdf_not_vectorized(xx, mpc, eta) # Here there was a division by `eta` that I removed because it produces a function that normalizes to 1/eta instead of 1.
 		suma += fland * gaussian_pdf(x, xx, gauss_sigma)
 
 	return step*suma
@@ -85,11 +86,11 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
-	if gauss_sigma < 0 or landau_xi <= 0:
+	if gauss_sigma < 0 or landau_xi < 0 or gauss_sigma == landau_xi == 0: # Non valid values.
 		result = x*float('NaN')
-	else: # sigma>=0 AND xi>0
+	else: # sigma>=0 and xi>=0 but sigma != xi
 		if gauss_sigma < 1e-6*landau_xi: # The Gaussian contribution is negligible...
-			result = landau_pdf(x, landau_x_mpv, landau_xi)
+			result = landau.pdf(x, landau_x_mpv, landau_xi)
 		elif gauss_sigma > 10000*landau_xi: # The Landau contribution is negligible...
 			result = gaussian_pdf(x, landau_x_mpv, gauss_sigma)
 		else: # All cases where Landau and Gauss contributions are important simultaneously...
@@ -101,7 +102,7 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 				n_values_convolution_axis *= int(gauss_sigma/landau_xi/3) # To avoid instabilities, see https://github.com/SiLab-Bonn/pylandau/issues/1
 			n_values_convolution_axis = min(n_values_convolution_axis, 100000) # Limit the maximum value.
 			xx = np.linspace(xlow, xupp, n_values_convolution_axis)
-			result = np.diff(xx,axis=0)[0]*(landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
+			result = np.diff(xx,axis=0)[0]*(landau.pdf(xx.reshape(xx.shape[0]*xx.shape[1]), landau_x_mpv, landau_xi).reshape(xx.shape)*gaussian_pdf(x, xx, gauss_sigma)).sum(axis=0)
 	return np.squeeze(result)
 
 def automatic_cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
@@ -152,22 +153,42 @@ def cdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float, lower_n_xi
 	-------
 	landau_cdf: float, numpy array
 		Value of the Landau CDF.
+	
+	Error handling
+	--------------
+	Rises `TypeError` if the parameters are not within the accepted types.
+	Non valid values (e.g. sigma<0) rise no errors but return `float('NaN')`.
+	
+	Notes
+	-----
+	For certain values of the parameters an approximation is returned. This
+	is to avoid numerical instabilities and to increase the calculation
+	speed. Such approximations are:
+	- If `gauss_sigma < 1e-6*landau_xi` it returns a Landau.
+	- If `gauss_sigma > 10000*landau_xi` it returns a Gaussian.
 	"""
 	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma, 'lower_n_xi_sigma':lower_n_xi_sigma, 'dx_n_xi':dx_n_xi}, (int, float))
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
-	
-	x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
-	x_high = x
-	dx = landau_xi/dx_n_xi
-	xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
-	xx[xx>x_high] = float('NaN')
-	result = np.trapz(
-		x = xx,
-		y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]),landau_x_mpv, landau_xi, gauss_sigma).reshape(xx.shape),
-		axis = 0,
-	)
+	if gauss_sigma < 0 or landau_xi < 0 or gauss_sigma == landau_xi == 0: # Non valid values.
+		result = x*float('NaN')
+	else: # sigma>=0 and xi>=0 but sigma != xi
+		if gauss_sigma < 1e-6*landau_xi: # The Gaussian contribution is negligible...
+			result = landau.cdf(x, landau_x_mpv, landau_xi)
+		elif gauss_sigma > 10000*landau_xi: # The Landau contribution is negligible...
+			result = (erf((x-landau_x_mpv)/gauss_sigma)+1)/2
+		else: # All cases where Landau and Gauss contributions are important simultaneously...
+			x_low = np.minimum(x, landau_x_mpv - lower_n_xi_sigma*(landau_xi+gauss_sigma)) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
+			x_high = x
+			dx = landau_xi/dx_n_xi
+			xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
+			xx[xx>x_high] = float('NaN')
+			result = np.trapz(
+				x = xx,
+				y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]),landau_x_mpv, landau_xi, gauss_sigma).reshape(xx.shape),
+				axis = 0,
+			)
 	return np.squeeze(result)
 
 def sample(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples: int):
@@ -194,6 +215,12 @@ def sample(landau_x_mpv: float, landau_xi: float, gauss_sigma: float, n_samples:
 	"""
 	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float))
 	ct.check_is_instance(n_samples, 'n_samples', int)
+	if landau_xi == gauss_sigma == 0:
+		raise ValueError(f'`landau_xi` and `gauss_sigma` are both 0, the langauss distribution is not defined there so I cannot sample it.')
+	if landau_xi < 0:
+		raise ValueError(f'`landau_xi` must be >= 0.')
+	if gauss_sigma < 0:
+		raise ValueError(f'`gauss_sigma` must be >= 0.')
 	if n_samples < 0:
 		raise ValueError(f'`n_samples` must be > 0.')
 	x_axis = np.linspace(landau_x_mpv - 6*(landau_xi+gauss_sigma),landau_x_mpv+(55*landau_xi+6*gauss_sigma),333)
