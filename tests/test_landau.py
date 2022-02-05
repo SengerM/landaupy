@@ -7,9 +7,12 @@ from math import isclose
 class TestLandauPDF(unittest.TestCase):
 	"""Tests of the `landaupy.landau.landau_pdf` function, which is the most
 	fundamental one of the whole package."""
+	
 	def test_at_infinities(self):
 		self.assertEqual(landau.landau_pdf(-float('inf')), 0)
 		self.assertEqual(landau.landau_pdf(+float('inf')), 0)
+		self.assertTrue(all(landau.landau_pdf(np.array(9*[-float('inf')]))==0))
+		self.assertTrue(all(landau.landau_pdf(np.array(9*[float('inf')]))==0))
 	
 	def test_with_NaN(self):
 		self.assertTrue(np.isnan(landau.landau_pdf(float('NaN'))))
@@ -35,6 +38,12 @@ class TestLandauPDF(unittest.TestCase):
 				rel_tol = 1e-9,
 			),
 		)
+
+class TestLandauCDF(unittest.TestCase):
+	"""Tests of the `landaupy.landau.landau_cdf` function."""
+	def test_at_infinities(self):
+		self.assertEqual(landau.landau_cdf(-float('inf')), 0)
+		self.assertEqual(landau.landau_cdf(+float('inf')), 1)
 	
 if __name__ == '__main__':
 	unittest.main()

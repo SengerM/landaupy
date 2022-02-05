@@ -169,6 +169,60 @@ def landau_pdf(x):
 	
 	return np.squeeze(result)
 
+def landau_cdf(x, x_min: float=-5, dx: float=1):
+	"""Calculates the CDF of the "basic" Landau distribution, i.e. the 
+	distribution when the location parameter is 0 and the scale parameter 
+	is 1. The algorithm was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html).
+	
+	Parameters
+	----------
+	x: float, numpy array
+		Point in which to calculate the function.
+	x_min: float, default -5
+		Value of $x$ from which to start the integration. Reduce for more
+		precision.
+	dx: float, default 1
+		Step for the integration. Reduce for more precision.
+	
+	Returns
+	-------
+	landau_cdf: float, numpy array
+		The value of the Landau distribution.
+	
+	Error handling
+	--------------
+	Rises `TypeError` if the parameters are not within the accepted types.
+	If `dx` <= 0 it rises `ValueError`.
+	"""
+	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
+	ct.check_are_instances({'dx': dx, 'x_min': x_min}, (int, float))
+	if dx <= 0:
+		raise ValueError(f'`dx` must be > 0.')
+	if not np.isfinite(x_min):
+		raise ValueError(f'`x_min` must be finite, I have received x_min={repr(x_min)}.')
+	if not np.isfinite(dx):
+		raise ValueError(f'`x_min` must be finite, I have received x_min={repr(dx)}.')
+	
+	x, = np.meshgrid(x)
+	x = x.astype(float)
+	
+	result = x*float('NaN') # Initialize.
+	
+	x_is_finite_indices = np.isfinite(x)
+	if x_is_finite_indices.any():
+		x_low = np.minimum(x[x_is_finite_indices], x_min).astype(float)
+		x_high = x[x_is_finite_indices]
+		xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
+		xx[xx>x_high] = float('NaN')
+		result[x_is_finite_indices] = np.trapz(
+			x = xx,
+			y = landau_pdf(xx.reshape(xx.shape[0]*xx.shape[1])).reshape(xx.shape),
+			axis = 0,
+		)
+	result[np.isneginf(x)] = 0
+	result[np.isposinf(x)] = 1
+	return np.squeeze(result)
+
 def pdf(x, x_mpv, xi):
 	"""Landau probability density function (PDF) with parameters.
 
@@ -263,16 +317,7 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 	else: # xi > 0
 		if isinstance(x, (int, float)):
 			x = np.array([x])
-		x_low = np.minimum(x, x_mpv - lower_n_xi*xi).astype(float) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
-		x_high = x
-		dx = xi/dx_n_xi
-		xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
-		xx[xx>x_high] = float('NaN')
-		result = np.trapz(
-			x = xx,
-			y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]), x_mpv, xi).reshape(xx.shape),
-			axis = 0,
-		)
+		result = landau_cdf((x - x0) / xi)
 	return np.squeeze(result)
 
 def sample(x_mpv: float, xi: float, n_samples: int):
