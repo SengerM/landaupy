@@ -11,6 +11,7 @@ class TestLandauTypes(unittest.TestCase):
 			{'x': np.linspace(1,2), 'x_mpv': 1, 'xi': 1},
 			{'x': 1, 'x_mpv': np.linspace(1,2), 'xi': 1},
 			{'x': 1, 'x_mpv': 1, 'xi': np.linspace(1,2)},
+			# ~ {'x': 1, 'x_mpv': np.linspace(1,2,5), 'xi': np.linspace(1,2)},
 			{'x': np.linspace(1,2), 'x_mpv': np.linspace(1,2), 'xi': np.linspace(1,2)},
 		]
 		for args in landau_pdf_should_not_rise_type_error:
@@ -32,8 +33,8 @@ class TestLandauTypes(unittest.TestCase):
 		
 	def test_cdf(self):
 		landau_cdf_should_not_rise_type_error = [
-			{'x': 1, 'x_mpv': 1, 'xi': 1, 'lower_n_xi': 4, 'dx_n_xi': 9},
-			{'x': np.linspace(1,2), 'x_mpv': 1, 'xi': 1, 'lower_n_xi': 4, 'dx_n_xi': 9},
+			{'x': 1, 'x_mpv': 1, 'xi': 1},
+			{'x': np.linspace(1,2), 'x_mpv': 1, 'xi': 1},
 		]
 		for args in landau_cdf_should_not_rise_type_error:
 			with self.subTest(i=args):
@@ -43,10 +44,9 @@ class TestLandauTypes(unittest.TestCase):
 					self.fail()
 		
 		landau_cdf_shoud_rise_type_error = [
-			{'x': '1', 'x_mpv': 1, 'xi': 1, 'lower_n_xi': 4, 'dx_n_xi': 9},
-			{'x': 1, 'x_mpv': '1', 'xi': 1, 'lower_n_xi': 4, 'dx_n_xi': 9},
-			{'x': 1, 'x_mpv': np.array(3), 'xi': 1, 'lower_n_xi': 4, 'dx_n_xi': 9},
-			{'x': 1, 'x_mpv': 1, 'xi': 1, 'lower_n_xi': 4, 'dx_n_xi': '0'},
+			{'x': '1', 'x_mpv': 1, 'xi': 1,},
+			{'x': 1, 'x_mpv': '1', 'xi': 1,},
+			{'x': 1, 'x_mpv': np.array(3), 'xi': 1},
 		]
 		for args in landau_cdf_shoud_rise_type_error:
 			with self.subTest(i=args):
