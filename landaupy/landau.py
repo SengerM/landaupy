@@ -7,6 +7,12 @@ from .samplers import sample_distribution_given_cdf
 from . import _check_types as ct
 import warnings
 
+def convert_x_mpv_to_x0(x_mpv, xi):
+	return x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
+
+def convert_x0_to_x_mpv(x0, xi):
+	return x0 - 0.22278298*xi
+
 def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
 	"""Non vectorized Landau PDF calculation. **This function should be 
 	avoided**, this is almost a copy-paste from [the original Root code](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html)
@@ -261,7 +267,7 @@ def pdf(x, x_mpv, xi):
 	if xi.shape == () and xi <= 0: # If `xi` is just a single number and <= 0...
 		result = x*float('NaN')
 	else:
-		x0 = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
+		x0 = convert_x_mpv_to_x0(x_mpv, xi)
 		with warnings.catch_warnings():
 			warnings.simplefilter("ignore") # I don't want to see the warnings of numpy, anyway it will fill with `NaN` or `inf` values so it is fine.
 			result = landau_pdf((x - x0) / xi)/xi
@@ -284,7 +290,7 @@ def automatic_cdf(x, x_mpv: float, xi: float):
 	integral, error = _cdf(x)
 	return integral
 
-def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
+def cdf(x, x_mpv: float, xi: float):
 	"""Landau cumulative distribution function (CDF). 
 
 	Parameters
@@ -295,35 +301,19 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 		Position of the most probable value (MPV) of the Landau distribution.
 	xi: float
 		Parameter $xi$ of the Landau distribution, it is a measure of its width.
-	lower_n_xi: float, default 4
-		The numeric integration lower limit is dependent on `xi` in the 
-		following way `np.minimum(x, x_mpv - lower_n_xi*xi)`. The default 
-		value should work in any case but if you find troubles you can 
-		change it. Increasing `lower_n_xi` will extend the integration 
-		towards -infinity yielding more accurate results but extending 
-		the computation time.
-	dx_n_xi: float, default 9
-		The integration dx is calculated as `dx = xi/dx_n_xi`. The default 
-		value should work in any case but you can change it if you see
-		issues. Increasing `dx_n_xi` will produce a smaller dx and thus
-		more accurate results, but the computation time will also be
-		increased.
 
 	Returns
 	-------
 	landau_cdf: float, numpy array
 		Value of the Landau CDF.
 	"""
-	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi, 'lower_n_xi':lower_n_xi, 'dx_n_xi':dx_n_xi}, (int, float))
+	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi}, (int, float))
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
-	for name, var in {'lower_n_xi': lower_n_xi, 'dx_n_xi': dx_n_xi}.items():
-		if var <= 0:
-			raise ValueError(f'`{name}` must be > 0.')
+	x = np.asarray(x)
 	if xi <= 0:
 		result = x*float('NaN')
 	else: # xi > 0
-		if isinstance(x, (int, float)):
-			x = np.array([x])
+		x0 = convert_x_mpv_to_x0(x_mpv, xi)
 		result = landau_cdf((x - x0) / xi)
 	return np.squeeze(result)
 
