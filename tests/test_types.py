@@ -47,7 +47,6 @@ class TestLandauTypes(unittest.TestCase):
 			{'x': '1', 'x_mpv': 1, 'xi': 1,},
 			{'x': 1, 'x_mpv': '1', 'xi': 1,},
 			{'x': 1, 'x_mpv': np.array(3), 'xi': 1},
-			{'x': 1, 'x_mpv': 1, 'xi': 1},
 		]
 		for args in landau_cdf_shoud_rise_type_error:
 			with self.subTest(i=args):
