@@ -160,17 +160,18 @@ def pdf(x, x_mpv, xi):
 	x = x.astype(float)
 	x_mpv = x_mpv.astype(float)
 	xi = xi.astype(float)
-	x_mpv = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
-	v = (x - x_mpv) / xi
-	
-	denlan = x*float('NaN') # Initialize.
-	xi[xi<=0] = float('NaN') # These are non valid values.
-	
-	limits = (-float('inf'),  -5.5,       -1,        1,        5,       12,       50,      300, float('inf'))
-	formulas = (denlan_1, denlan_2, denlan_3, denlan_4, denlan_5, denlan_6, denlan_7, denlan_8)
 	
 	with warnings.catch_warnings():
 		warnings.simplefilter("ignore") # I don't want to see the warnings of numpy, anyway it will fill with `NaN` values so it is fine.
+		x_mpv = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
+		v = (x - x_mpv) / xi
+		
+		denlan = x*float('NaN') # Initialize.
+		xi[xi<=0] = float('NaN') # These are non valid values.
+		
+		limits = (-float('inf'),  -5.5,       -1,        1,        5,       12,       50,      300, float('inf'))
+		formulas = (denlan_1, denlan_2, denlan_3, denlan_4, denlan_5, denlan_6, denlan_7, denlan_8)
+	
 		for k, formula in enumerate(formulas):
 			indices = (limits[k]<=v)&(v<limits[k+1])
 			denlan[indices] = formula(v[indices])
