@@ -77,7 +77,7 @@ class TestLangaussValues(unittest.TestCase):
 		"""Compares the `landaupy.pdf` implementation against "the original
 		implementation" from Root."""
 		x_mpv_to_test = [0]
-		xi_to_test = [.01,1,11]
+		xi_to_test = [0] + [10**i for i in [-3,-1,0,1,3]]
 		sigma_to_test = xi_to_test
 		
 		if DEBUGGING_PLOTS == True:
@@ -87,6 +87,12 @@ class TestLangaussValues(unittest.TestCase):
 		for x_mpv in x_mpv_to_test:
 			for xi in xi_to_test:
 				for sigma in sigma_to_test:
+					# TODO: Find a reference for these cases ---
+					if sigma >= 1e6*xi or sigma==0:
+						continue # The reference function fails here.
+					# ------------------------------------------
+					if sigma==xi==0: # This is actually a non valid case, but I am not testing that here.
+						continue
 					with self.subTest(i={'x_mpv': x_mpv, 'xi': xi, 'sigma': sigma}):
 						x = np.linspace(x_mpv-2*(xi+sigma), x_mpv+22*xi+5*sigma,9)
 						pdf_by_landaupy = langauss.pdf(x, x_mpv, xi, sigma)
@@ -105,7 +111,8 @@ class TestLangaussValues(unittest.TestCase):
 								A = pdf_by_landaupy,
 								B = pdf_reference,
 								rel_tol = 1e-3,
-							)
+							),
+							'`landaupy.langauss.pdf` does not match the reference.',
 						)
 		
 		if DEBUGGING_PLOTS == True:
@@ -114,11 +121,13 @@ class TestLangaussValues(unittest.TestCase):
 	def test_normalization(self):
 		"""Test that the PDF integrates to 1."""
 		x_mpv_to_test = [0]
-		xi_to_test = [1e-9,1e-3,1,11,111,1e5,1e22]
+		xi_to_test = [0] + [10**i for i in [-9,-6,0,3,9]]
 		sigma_to_test = xi_to_test
 		for x_mpv in x_mpv_to_test:
 			for xi in xi_to_test:
 				for sigma in sigma_to_test:
+					if sigma==xi==0: # This is actually a non valid case, but I am not testing that here.
+						continue
 					with self.subTest(i={'x_mpv': x_mpv, 'xi': xi, 'sigma': sigma}):
 						integral, err = integrate.quad(lambda x: langauss.pdf(x, landau_x_mpv=x_mpv, landau_xi=xi, gauss_sigma=sigma), x_mpv-5*(xi+sigma), x_mpv+2222*xi+5*sigma)
 						self.assertTrue(
