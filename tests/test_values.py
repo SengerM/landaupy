@@ -70,7 +70,37 @@ class TestLandauValues(unittest.TestCase):
 						),
 						f'integral={integral}, error={err}, was expecting integral≈1.',
 					)
-
+	
+	def test_cdf(self):
+		"""Test the CDF that starts at 0 and ends up in 1."""
+		x_mpv_to_test = [0,1,11,111,1111,1e-3,1e-11]
+		x_mpv_to_test += [-x for x in x_mpv_to_test]
+		xi_to_test = [1e-12,1e-3,1,11,111,1e5,1e22,1e55] # Very small values here fail because then it tries to evaluate the function in `x_mpv-xi=1-1e-55` wich results in `1` and this is exactly `x_mpv` so the CDF does not return 0 or 1 as one should expect. But this is a problem of the test, not the CDF.
+		
+		for x_mpv in x_mpv_to_test:
+			for xi in xi_to_test:
+				with self.subTest(i={'x_mpv': x_mpv, 'xi': xi}):
+					x = x_mpv-5*xi
+					cdf_value = landau.cdf(x, x_mpv, xi)
+					self.assertTrue(
+						isclose(
+							a = cdf_value,
+							b = 0,
+							abs_tol = 1e-3,
+						),
+						f'`landau.cdf` was evaluated in a "very negative point" (x={x}) where it should return "almost 0" but it returned {cdf_value}',
+					)
+					x = x_mpv+2222*xi
+					cdf_value = landau.cdf(x, x_mpv, xi)
+					self.assertTrue(
+						isclose(
+							a = cdf_value,
+							b = 1,
+							abs_tol = 1e-3,
+						),
+						f'`landau.cdf` was evaluated in a "very positive point" (x={x}) where it should return "almost 1" but it returned {cdf_value}',
+					)
+		
 class TestLangaussValues(unittest.TestCase):
 	"""Test if the functions are producing the correct values."""
 	def test_pdf(self):
@@ -137,6 +167,47 @@ class TestLangaussValues(unittest.TestCase):
 								abs_tol = 1e-3,
 							),
 							f'integral={integral}, error={err}, was expecting integral≈1.',
+						)
+	
+	def test_cdf(self):
+		"""Test the CDF that starts at 0 and ends up in 1."""
+		x_mpv_to_test = [0]
+		x_mpv_to_test += [-x for x in x_mpv_to_test]
+		xi_to_test = [0] + [10**i for i in [-9,-3,0,3,6,9]] # Very small values here fail because then it tries to evaluate the function in `x_mpv-xi=1-1e-55` wich results in `1` and this is exactly `x_mpv` so the CDF does not return 0 or 1 as one should expect. But this is a problem of the test, not the CDF.
+		sigma_to_test = xi_to_test
+		
+		for x_mpv in x_mpv_to_test:
+			for xi in xi_to_test:
+				for sigma in sigma_to_test:
+					if sigma==xi==0: # This is actually a non valid case, but I am not testing that here.
+						continue
+					########################################################
+					########################################################
+					# TODO: fix these values that drain all the memory  ####
+					if not 1e-3 < sigma < 1e3 or not 1e-3 < xi < 1e3:   ####
+						continue                                        ####
+					########################################################
+					########################################################
+					with self.subTest(i={'x_mpv': x_mpv, 'xi': xi, 'sigma': sigma}):
+						x = x_mpv-5*(xi+sigma)
+						cdf_value = langauss.cdf(x, x_mpv, xi, sigma)
+						self.assertTrue(
+							isclose(
+								a = cdf_value,
+								b = 0,
+								abs_tol = 1e-3,
+							),
+							f'`langauss.cdf` was evaluated in a "very negative point" (x={x}) where it should return "almost 0" but it returned {cdf_value}',
+						)
+						x = x_mpv+2222*xi+5*sigma
+						cdf_value = langauss.cdf(x, x_mpv, xi, sigma)
+						self.assertTrue(
+							isclose(
+								a = cdf_value,
+								b = 1,
+								abs_tol = 1e-3,
+							),
+							f'`langauss.cdf` was evaluated in a "very positive point" (x={x}) where it should return "almost 1" but it returned {cdf_value}',
 						)
 
 if __name__ == '__main__':
