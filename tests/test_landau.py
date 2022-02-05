@@ -53,9 +53,33 @@ class TestLandauPDF(unittest.TestCase):
 
 class TestLandauCDF(unittest.TestCase):
 	"""Tests of the `landaupy.landau.landau_cdf` function."""
+	
 	def test_at_infinities(self):
 		self.assertEqual(landau.landau_cdf(-float('inf')), 0)
 		self.assertEqual(landau.landau_cdf(+float('inf')), 1)
+	
+	def test_with_NaN(self):
+		self.assertTrue(np.isnan(landau.landau_cdf(float('NaN'))))
+		self.assertTrue(all(np.isnan(landau.landau_cdf(np.array([float('NaN')]*999)))))
+		self.assertTrue(any(np.isnan(landau.landau_cdf(np.array([float('NaN')]+[1,2,3,4,5])))))
+	
+	def test_with_finite_numbers(self):
+		self.assertFalse(any(np.isnan(landau.landau_pdf(np.linspace(-22,2222,999)))))
+		self.assertFalse(any(np.isnan(landau.landau_pdf(np.linspace(-1e99,1e99,999)))))
+	
+	def test_not_rises_error(self):
+		for x in [1,1.1,float('inf'),-float('inf'),float('NaN'),np.array(1),np.array([1,2]),np.random.random((5,6))]:
+			with self.subTest(i={'x': x}):
+				try:
+					landau.landau_cdf(x)
+				except:
+					self.fail()
+	
+	def test_rises_type_error(self):
+		for x in ['a',[1,2,3]]:
+			with self.subTest(i={'x': x}):
+				with self.assertRaises(TypeError):
+					landau.landau_cdf(x)
 	
 if __name__ == '__main__':
 	unittest.main()
