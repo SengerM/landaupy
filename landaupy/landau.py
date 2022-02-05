@@ -230,7 +230,7 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 			raise ValueError(f'`{name}` must be > 0.')
 	if xi <= 0:
 		result = x*float('NaN')
-	else:
+	else: # xi > 0
 		if isinstance(x, (int, float)):
 			x = np.array([x])
 		x_low = np.minimum(x, x_mpv - lower_n_xi*xi).astype(float) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
@@ -266,6 +266,8 @@ def sample(x_mpv: float, xi: float, n_samples: int):
 	"""
 	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi}, (int, float))
 	ct.check_is_instance(n_samples, 'n_samples', (int))
+	if xi <= 0:
+		raise ValueError(f'`xi` must be > 0.')
 	if n_samples <= 0:
 		raise ValueError(f'`n_samples` must be > 0.')
 	x_axis = np.linspace(x_mpv-5*xi,x_mpv+55*xi,999)
