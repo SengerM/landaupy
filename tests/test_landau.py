@@ -24,6 +24,7 @@ class TestLandauPDF(unittest.TestCase):
 		self.assertTrue(any(np.isnan(landau.landau_pdf(np.array([float('NaN')]+[1,2,3,4,5])))))
 	
 	def test_with_finite_numbers(self):
+		self.assertFalse(np.isnan(landau.landau_pdf(4)))
 		self.assertFalse(any(np.isnan(landau.landau_pdf(np.linspace(-22,2222,9999999)))))
 		self.assertFalse(any(np.isnan(landau.landau_pdf(np.linspace(-1e99,1e99,9999999)))))
 	
@@ -50,6 +51,43 @@ class TestLandauPDF(unittest.TestCase):
 			with self.subTest(i={'x': x}):
 				with self.assertRaises(TypeError):
 					landau.landau_pdf(x)
+	
+	def test_shape(self):
+		# Test floats and ints ---
+		for x in [1,1.1,float('NaN'),float('inf')]:
+			with self.subTest(i=f'x={x} of type {type(x)}'):
+				result = landau.landau_pdf(x)
+				self.assertTrue(
+					isinstance(result, float),
+					f'Was expecting `result` of type `{float}` but instead if is of type `{type(result)}`.'
+				)
+		# Test numpy arrays ---
+		for x in [np.array(0), np.linspace(1,2), np.random.random((3)),np.random.random((3,3)),np.random.random((3,3,3)),np.random.random((3,3,3,3))]:
+			with self.subTest(i=f'`x` of type {type(x)} with shape {x.shape}'):
+				result = landau.landau_pdf(x)
+				self.assertTrue(
+					isinstance(result, np.ndarray),
+					f'Was expecting `result` of type `{np.ndarray}` but instead it is of type `{type(result)}`.'
+				)
+				self.assertTrue(
+					result.shape == x.shape,
+					f'Was expecting `result.shape` to be `{x.shape}` but instead it is `{result.shape}`.'
+				)
+	
+	def test_against_reference(self):
+		x = np.linspace(-999, 9999,99999)
+		pdf_by_landaupy = landau.landau_pdf(x)
+		pdf_reference = np.array([landau.pdf_not_vectorized(x, landau.convert_x0_to_x_mpv(0,1), 1) for x in x])
+		
+		self.assertTrue(
+			np.allclose(
+				pdf_by_landaupy,
+				pdf_reference,
+				equal_nan = True,
+				rtol = 1e-9,
+				atol = 1e-9,
+			)
+		)
 
 class TestLandauCDF(unittest.TestCase):
 	"""Tests of the `landaupy.landau.landau_cdf` function."""
@@ -81,5 +119,27 @@ class TestLandauCDF(unittest.TestCase):
 				with self.assertRaises(TypeError):
 					landau.landau_cdf(x)
 	
+	def test_shape(self):
+		# Test floats and ints ---
+		for x in [1,1.1,float('NaN'),float('inf')]:
+			with self.subTest(i=f'x={x} of type {type(x)}'):
+				result = landau.landau_cdf(x)
+				self.assertTrue(
+					isinstance(result, float),
+					f'Was expecting `result` of type `{float}` but instead if is of type `{type(result)}`.'
+				)
+		# Test numpy arrays ---
+		for x in [np.array(0), np.linspace(1,2), np.random.random((3)),np.random.random((3,3)),np.random.random((3,3,3)),np.random.random((3,3,3,3))]:
+			with self.subTest(i=f'`x` of type {type(x)} with shape {x.shape}'):
+				result = landau.landau_cdf(x)
+				self.assertTrue(
+					isinstance(result, np.ndarray),
+					f'Was expecting `result` of type `{np.ndarray}` but instead it is of type `{type(result)}`.'
+				)
+				self.assertTrue(
+					result.shape == x.shape,
+					f'Was expecting `result.shape` to be `{x.shape}` but instead it is `{result.shape}`.'
+				)
+
 if __name__ == '__main__':
 	unittest.main()
