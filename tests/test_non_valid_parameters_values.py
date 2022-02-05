@@ -30,7 +30,6 @@ class TestLandauNonValidParamters(unittest.TestCase):
 				with self.subTest(i={'x_mpv': x_mpv, 'xi': xi}):
 					x = np.linspace(x_mpv-55*np.abs(xi), x_mpv+2222*np.abs(xi),999)
 					cdf_values = landau.cdf(x, x_mpv, xi)
-					cdf_values[0] = 1
 					if xi > 0: # There should be not any NaN
 						self.assertFalse(any(np.isnan(cdf_values)), '`landau.cdf` is returning NaN when it should not.')
 					else: # All elements in the output should be NaN
