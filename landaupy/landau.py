@@ -222,22 +222,27 @@ def cdf(x, x_mpv: float, xi: float, lower_n_xi: float=4, dx_n_xi: float=9):
 	landau_cdf: float, numpy array
 		Value of the Landau CDF.
 	"""
-	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi}, (int, float))
+	ct.check_are_instances({'x_mpv':x_mpv, 'xi':xi, 'lower_n_xi':lower_n_xi, 'dx_n_xi':dx_n_xi}, (int, float))
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
-	if isinstance(x, (int, float)):
-		x = np.array([x])
-	x_low = np.minimum(x, x_mpv - lower_n_xi*xi) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
-	x_high = x
-	dx = xi/dx_n_xi
-	xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
-	xx[xx>x_high] = float('NaN')
-	return np.squeeze(
-		np.trapz(
+	for name, var in {'lower_n_xi': lower_n_xi, 'dx_n_xi': dx_n_xi}.items():
+		if var <= 0:
+			raise ValueError(f'`{name}` must be > 0.')
+	if xi <= 0:
+		result = x*float('NaN')
+	else:
+		if isinstance(x, (int, float)):
+			x = np.array([x])
+		x_low = np.minimum(x, x_mpv - lower_n_xi*xi).astype(float) # At this point the PDF is 1e-9 smaller than in the peak, and goes very quickly to 0.
+		x_high = x
+		dx = xi/dx_n_xi
+		xx = np.linspace(x_low, x_high, int(max(x_high-x_low)/dx))
+		xx[xx>x_high] = float('NaN')
+		result = np.trapz(
 			x = xx,
 			y = pdf(xx.reshape(xx.shape[0]*xx.shape[1]), x_mpv, xi).reshape(xx.shape),
 			axis = 0,
 		)
-	)
+	return np.squeeze(result)
 
 def sample(x_mpv: float, xi: float, n_samples: int):
 	"""Generate samples from a Landau distribution.
