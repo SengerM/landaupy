@@ -62,7 +62,7 @@ def pdf_not_vectorized(x: float, x_mpv: float, xi: float) -> float:
 		denlan = u * u * (1 + (a2[0] + a2[1] * u) * u)
 	return denlan / xi
 
-def landau_function(x):
+def landau_pdf(x):
 	"""Calculates the "basic" Landau distribution, i.e. the distribution
 	when the location parameter is 0 and the scale parameter is 1. The 
 	algorithm was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html).
@@ -203,7 +203,7 @@ def pdf(x, x_mpv, xi):
 		x0 = x_mpv + 0.22278298*xi # This number I took from Root's langauss implementation: https://root.cern.ch/doc/master/langaus_8C.html and basically it gives the correct MPV value.
 		with warnings.catch_warnings():
 			warnings.simplefilter("ignore") # I don't want to see the warnings of numpy, anyway it will fill with `NaN` or `inf` values so it is fine.
-			result = landau_function((x - x0) / xi)/xi
+			result = landau_pdf((x - x0) / xi)/xi
 		if xi.shape != ():
 			result[xi<=0] = float('NaN')
 	return np.squeeze(result)
