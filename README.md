@@ -2,6 +2,8 @@
 
 A simple and **pure Python implementation**¹ of [the Landau distribution](https://en.wikipedia.org/wiki/Landau_distribution), since no common package (Scipy, Numpy, etc.) provides this. The algorithm to calculate the Landau distribution was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html) which is [documented here](https://root.cern.ch/doc/master/group__PdfFunc.html#ga53d01e04de833eda26560c40eb207cab).
 
+![Example of a langauss fit](https://i.ibb.co/kQwdhjX/Screenshot-2022-02-09-08-55-28.png)
+
 ## Installation
 
 To install the latest release:
