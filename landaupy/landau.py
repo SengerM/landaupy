@@ -157,8 +157,8 @@ def landau_pdf(x):
 		return denlan
 	
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
-	x, = np.meshgrid(x)
-	x = x.astype(float)
+	x_was_just_a_number = isinstance(x, (float,int))
+	x = np.atleast_1d(x).astype(float)
 	
 	result = x*float('NaN') # Initialize
 	x_is_finite_indices = np.isfinite(x)
@@ -173,7 +173,10 @@ def landau_pdf(x):
 		result[x_is_finite_indices] = denlan
 	result[np.isinf(x)] = 0
 	
-	return np.squeeze(result)
+	result = np.squeeze(result)
+	if x_was_just_a_number:
+		result = float(result)
+	return result
 
 def landau_cdf(x, x_min: float=-5, x_max: float=9999, dx: float=1):
 	"""Calculates the CDF of the "basic" Landau distribution, i.e. the 
@@ -214,8 +217,8 @@ def landau_cdf(x, x_min: float=-5, x_max: float=9999, dx: float=1):
 	if not np.isfinite(dx):
 		raise ValueError(f'`x_min` must be finite, I have received x_min={repr(dx)}.')
 	
-	x, = np.meshgrid(x)
-	x = x.astype(float)
+	x_was_just_a_number = isinstance(x, (float,int))
+	x = np.atleast_1d(x).astype(float)
 	
 	result = x*float('NaN') # Initialize.
 	
@@ -234,7 +237,11 @@ def landau_cdf(x, x_min: float=-5, x_max: float=9999, dx: float=1):
 	result[x>x_max] = 1
 	result[np.isneginf(x)] = 0
 	result[np.isposinf(x)] = 1
-	return np.squeeze(result)
+	
+	result = np.squeeze(result)
+	if x_was_just_a_number:
+		result = float(result)
+	return result
 
 def pdf(x, x_mpv, xi):
 	"""Landau probability density function (PDF) with parameters.
