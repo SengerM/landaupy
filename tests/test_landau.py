@@ -231,11 +231,11 @@ class TestPDFWithFloatParameters(unittest.TestCase):
 						with self.assertRaises(TypeError):
 							landau.pdf(x, x_mpv, xi)
 	
-	def test_returns_floats(self):
+	def test_returns_floats_when_the_input_is_a_float_or_an_int(self):
 		# Test floats and ints ---
 		for x_mpv in self.x_mpv_to_test:
 			for xi in self.xi_to_test:
-				for x in [1,1.1,float('NaN'),float('inf')]:
+				for x in [-1,0,1,1.1,float('NaN'),float('inf')]:
 					with self.subTest(i=f'x={x} of type {type(x)}'):
 						result = landau.pdf(x, x_mpv, xi)
 						self.assertTrue(
@@ -243,17 +243,13 @@ class TestPDFWithFloatParameters(unittest.TestCase):
 							f'Was expecting `result` of type `{float}` but instead if is of type `{type(result)}`.'
 						)
 	
-	def test_returns_propper_shape_array(self):
+	def test_returns_propper_shape_array_when_input_is_numpy_array(self):
 		# Test numpy arrays ---
 		for x_mpv in self.x_mpv_to_test:
 			for xi in self.xi_to_test:
-				for x in [np.array(0), np.linspace(1,2), np.random.random((3)),np.random.random((3,3)),np.random.random((3,3,3)),np.random.random((3,3,3,3))]:
-					with self.subTest(i=f'`x` of type {type(x)} with shape {x.shape}'):
+				for x in [np.linspace(1,2), np.random.random((3)),np.random.random((3,3)),np.random.random((3,3,3)),np.random.random((3,3,3,3))]:
+					with self.subTest(i=f'x.shape={x.shape}, type(x)={type(x)}'):
 						result = landau.pdf(x, x_mpv, xi)
-						self.assertTrue(
-							isinstance(result, np.ndarray),
-							f'Was expecting `result` of type `{np.ndarray}` but instead it is of type `{type(result)}`.'
-						)
 						self.assertTrue(
 							result.shape == x.shape,
 							f'Was expecting `result.shape` to be `{x.shape}` but instead it is `{result.shape}`.'
