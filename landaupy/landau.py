@@ -266,7 +266,7 @@ def pdf(x, x_mpv, xi):
 	Non valid values (e.g. xi<0) rise no errors but return `float('NaN')`.
 	"""
 	
-	ct.check_are_instances({'x':x, 'x_mpv':x_mpv, 'xi':xi}, (int, float, np.ndarray))
+	ct.check_are_instances({'x':x, 'x_mpv':x_mpv, 'xi':xi}, (int, float, np.ndarray, np.int64))
 	
 	x = np.asarray(x).astype(float)
 	x_mpv = np.asarray(x_mpv).astype(float)

@@ -82,7 +82,7 @@ def pdf(x, landau_x_mpv: float, landau_xi: float, gauss_sigma: float):
 	- If `gauss_sigma < 1e-6*landau_xi` it returns a Landau.
 	- If `gauss_sigma > 10000*landau_xi` it returns a Gaussian.
 	"""
-	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float))
+	ct.check_are_instances({'landau_x_mpv':landau_x_mpv, 'landau_xi':landau_xi, 'gauss_sigma':gauss_sigma}, (int, float, np.int64))
 	ct.check_is_instance(x, 'x', (int, float, np.ndarray))
 	if isinstance(x, (int, float)):
 		x = np.array([x])
