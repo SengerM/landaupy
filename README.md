@@ -6,11 +6,7 @@ A simple and **pure Python implementation**¹ of [the Landau distribution](https
 
 ## Installation
 
-To install the latest release:
-```
-pip install landaupy
-```
-To install the development version that is currently in this repo, run
+Just
 ```
 pip install git+https://github.com/SengerM/landaupy
 ```
