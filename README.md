@@ -13,7 +13,7 @@ pip install git+https://github.com/SengerM/landaupy
 
 ## Landau distribution in SciPy
 
-There is [a pull request](https://github.com/scipy/scipy/pull/19145) that would integrate the Landau distribution in the standard SciPy package, thus making it trivially available for all Python users. If you find this usefull, go to [the pool request](https://github.com/scipy/scipy/pull/19145) and give it a 👍 so they get more incentive to add it.
+There is [a pull request](https://github.com/scipy/scipy/pull/19145) that would integrate the Landau distribution in the standard SciPy package, thus making it trivially available for all Python users. If you find this useful, go to [the pull request](https://github.com/scipy/scipy/pull/19145) and give it a 👍 so they get more incentive to add it.
 
 ## Usage
 
