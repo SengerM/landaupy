@@ -2,18 +2,20 @@
 
 A simple and **pure Python implementation**¹ of [the Landau distribution](https://en.wikipedia.org/wiki/Landau_distribution), since no common package (Scipy, Numpy, etc.) provides this. The algorithm to calculate the Landau distribution was adapted from [the Root implementation](https://root.cern.ch/doc/master/PdfFuncMathCore_8cxx_source.html) which is [documented here](https://root.cern.ch/doc/master/group__PdfFunc.html#ga53d01e04de833eda26560c40eb207cab).
 
+¹ The only extra requirements are [numpy](https://numpy.org/) and [scipy](https://scipy.org/), which are trivial to install in my experience (you probably already have them). There is no need for any strange thing like C/C++→Python compilers/bridges, etc. that are hard to install and configure.
+
 ![Example of a langauss fit](https://i.ibb.co/kQwdhjX/Screenshot-2022-02-09-08-55-28.png)
 
 ## Installation
 
-Just
+Installing with Git:
 ```
 pip install git+https://github.com/SengerM/landaupy
 ```
-
-## Landau distribution in SciPy
-
-There is [a pull request](https://github.com/scipy/scipy/pull/19145) that would integrate the Landau distribution in the standard SciPy package, thus making it trivially available for all Python users. If you find this useful, go to [the pull request](https://github.com/scipy/scipy/pull/19145) and give it a 👍 so they get more incentive to add it.
+Manual installation:
+1. Download the repository as a `.zip` file.
+2. Decompress the `.zip` file wherever you like, for example `/wherever/I/like`.
+3. Run `pip install <path_to_decompressed>`, for example `pip install /wherever/I/like/landaupy`.
 
 ## Usage
 
@@ -135,6 +137,6 @@ One of the arguments of the `landau.pdf` function is `x_mpv`. This is really the
 
 I renamed *langau* to *langauss*, otherwise a simple typo can change the distribution you intend to use. Also renamed some of the parameters with more meaningful names.
 
-## Footnotes
+## Landau distribution in SciPy 🙂
 
-¹ The only extra requirements are [numpy](https://numpy.org/) and [scipy](https://scipy.org/), which are trivial to install in my experience (you probably already have them). But there is no need for any strange thing like C/C++→Python compilers/bridges, etc. that are hard to install and configure.
+There is [a pull request](https://github.com/scipy/scipy/pull/19145) that integrates the Landau distribution in the standard SciPy package, making it trivially available for all Python users in the world. If you find this useful, go to [the pull request](https://github.com/scipy/scipy/pull/19145) and give it a 👍.
