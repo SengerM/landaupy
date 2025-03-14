@@ -6,6 +6,10 @@ A simple and **pure Python implementation**¹ of [the Landau distribution](https
 
 ![Example of a langauss fit](https://i.ibb.co/kQwdhjX/Screenshot-2022-02-09-08-55-28.png)
 
+## IMPORTANT
+
+[The pull request](https://github.com/scipy/scipy/pull/19145) finally made it into SciPy! I would advise you to use [the official SciPy implementation of the Landau distribution](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.landau.html).
+
 ## Installation
 
 Installing with Git:
